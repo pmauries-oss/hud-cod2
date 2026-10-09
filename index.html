@@ -354,7 +354,7 @@ textarea.pat{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;
   </button>
   <div class="tb-stag" id="tb-name">Hub Formateurs — COD 2 PL</div>
   <div class="tb-badge" id="save-badge"></div>
-  <button class="tb-btn" onclick="sendToSP()" id="btn-sp" disabled title="Envoyer ce livret vers SharePoint SDIS 38" style="background:rgba(0,120,212,.4);border-color:rgba(0,120,212,.7);">☁ SP</button>
+  <button class="tb-btn" onclick="ghSendCurrent()" id="btn-gh" disabled title="Sauvegarder ce livret sur GitHub" style="background:rgba(36,100,45,.6);border-color:rgba(36,100,45,.9);">☁ GitHub</button>
   <button class="tb-btn green" onclick="shareStag()" id="btn-share" disabled title="Exporter / Partager ce livret">📤</button>
   <button class="tb-btn blue" onclick="forceSave()" id="btn-save" disabled>💾</button>
 </div>
@@ -375,10 +375,11 @@ textarea.pat{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;
       <div class="sb-storage-lbl">💾 Stockage local</div>
       <div class="sb-storage-val" id="storage-status">Chargement…</div>
     </div>
-    <div class="sb-storage" style="background:rgba(0,120,212,.12);border-bottom:1px solid rgba(0,120,212,.2);">
-      <div class="sb-storage-lbl" style="color:rgba(0,120,212,.7);">☁ Dossier SharePoint COD 2</div>
-      <div class="sb-storage-val" style="color:#82E0AA;font-size:10px;">Connexion SDIS 38 automatique</div>
-      <button class="fz-pick-btn" onclick="openSPFolder()" style="margin-top:6px;background:rgba(0,120,212,.5);border-color:rgba(0,120,212,.8);">📂 Ouvrir le dossier SharePoint</button>
+    <div class="sb-storage" style="background:rgba(36,100,45,.15);border-bottom:1px solid rgba(36,100,45,.3);">
+      <div class="sb-storage-lbl" style="color:rgba(100,200,100,.8);">☁ GitHub — Sauvegarde en ligne</div>
+      <div class="sb-storage-val" id="gh-status" style="color:rgba(200,220,200,.6);">Token non configuré</div>
+      <button class="fz-pick-btn" onclick="openGHCfg()" id="btn-gh-cfg" style="margin-top:6px;background:rgba(36,100,45,.5);border-color:rgba(36,100,45,.9);">⚙ Configurer le token GitHub</button>
+      <button class="fz-pick-btn" onclick="ghSyncAll()" id="btn-gh-sync" style="display:none;margin-top:4px;background:rgba(36,100,45,.3);border-color:rgba(36,100,45,.6);">🔄 Synchroniser depuis GitHub</button>
     </div>
 
     <div class="sess-zone">
@@ -389,8 +390,8 @@ textarea.pat{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;
     <div id="stag-list"></div>
 
     <div class="sb-footer">
-      <button class="sb-btn" onclick="syncAllToSP()" style="background:rgba(0,120,212,.25);border-color:rgba(0,120,212,.5);color:white;">☁ Envoyer tous les livrets → SharePoint</button>
-      <button class="sb-btn imp" onclick="importFile()">📥 Importer depuis SharePoint (.json)</button>
+      <button class="sb-btn" onclick="ghSyncAll()" style="background:rgba(36,100,45,.3);border-color:rgba(36,100,45,.6);color:white;">☁ Envoyer tous les livrets → GitHub</button>
+      <button class="sb-btn imp" onclick="importFile()">📥 Importer un livret (.json)</button>
       <button class="sb-btn" onclick="exportAll()">📦 Tout exporter (.json)</button>
       <button class="sb-btn" onclick="openSession()">✏ Modifier session / stagiaires</button>
       <button class="sb-btn" onclick="window.print()" id="btn-print" disabled>🖨 Imprimer le livret</button>
@@ -412,8 +413,8 @@ textarea.pat{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;
               <h3>⚡ Comment ça marche</h3>
               <div class="setup-step"><div class="sn">1</div><span>Cliquez sur un stagiaire dans la liste à gauche (ou appuyez sur ☰ sur mobile).</span></div>
               <div class="setup-step"><div class="sn">2</div><span>Remplissez le livret. <strong>Sauvegarde automatique</strong> dans ce navigateur après chaque modification.</span></div>
-              <div class="setup-step"><div class="sn">3</div><span>Bouton <strong>☁ SP</strong> (topbar) → le livret est envoyé dans le <strong>dossier SharePoint COD 2</strong>. Connexion SDIS 38 automatique.</span></div>
-              <div class="setup-step"><div class="sn">4</div><span>Depuis un autre appareil : <strong>Importer depuis SharePoint</strong> → sélectionner le fichier .json du stagiaire.</span></div>
+              <div class="setup-step"><div class="sn">3</div><span>Bouton <strong>☁ GitHub</strong> (topbar) → le livret est sauvegardé en ligne sur GitHub, accessible depuis n'importe quel appareil.</span></div>
+              <div class="setup-step"><div class="sn">4</div><span>Configurez le <strong>token GitHub</strong> une seule fois (⚙ dans la barre latérale) pour activer la synchronisation automatique.</span></div>
             </div>
           </div>
         </div>
@@ -433,6 +434,38 @@ textarea.pat{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;
     <div class="mac">
       <button class="bm c" onclick="closeM('mo-sess')">Annuler</button>
       <button class="bm p" onclick="saveSession()">✅ Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CONFIG GITHUB ════════════════════════ -->
+<div class="mo" id="mo-gh">
+  <div class="mb" style="max-width:500px;">
+    <h3 style="color:#24642d;">☁ Configuration GitHub</h3>
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#1b5e20;line-height:1.6;">
+      ✅ <strong>Sauvegarde automatique</strong> dans le dépôt privé <code style="background:#c8e6c9;padding:1px 5px;border-radius:3px;">pmauries-oss/cod2-data</code> sur GitHub.<br>
+      Chaque livret est un fichier JSON versionné. Le responsable de stage peut y accéder à tout moment.
+    </div>
+    <label>Token GitHub (commence par <code>github_pat_</code>) :</label>
+    <div class="pwd-field">
+      <input type="password" id="gh-token-input" placeholder="github_pat_xxxxxxxxxxxx" autocomplete="off" style="font-family:monospace;font-size:12px;">
+      <button class="pwd-eye" onclick="toggleVis('gh-token-input')" type="button">👁</button>
+    </div>
+    <div style="background:#f3f3f3;border-radius:6px;padding:10px 12px;font-size:11px;color:#555;margin-bottom:12px;line-height:1.7;">
+      <strong>Comment obtenir le token :</strong><br>
+      1. Sur GitHub → photo profil → <strong>Settings</strong><br>
+      2. Tout en bas → <strong>Developer settings</strong><br>
+      3. <strong>Personal access tokens → Fine-grained tokens</strong><br>
+      4. <strong>Generate new token</strong> → Nom : <em>Hub COD2</em><br>
+      5. Repository access : <strong>Only selected → cod2-data</strong><br>
+      6. Permissions → Contents : <strong>Read and write</strong><br>
+      7. <strong>Generate token</strong> → copier le token ici
+    </div>
+    <div id="gh-cfg-msg" style="font-size:12px;min-height:18px;margin-bottom:6px;"></div>
+    <div class="mac">
+      <button class="bm c" onclick="closeM('mo-gh')">Annuler</button>
+      <button class="bm" onclick="ghClearToken()" style="background:#e53935;color:white;">🗑 Supprimer</button>
+      <button class="bm" onclick="saveGHToken()" style="background:#24642d;color:white;">💾 Enregistrer</button>
     </div>
   </div>
 </div>
@@ -688,17 +721,24 @@ async function selectStag(nom){
   document.getElementById('tb-name').textContent='Livret — '+nom;
   document.getElementById('btn-save').disabled=false;
   document.getElementById('btn-share').disabled=false;
-  document.getElementById('btn-sp').disabled=false;
+  document.getElementById('btn-gh').disabled=false;
   document.getElementById('btn-print').disabled=false;
   showBadge('loading','⏳ Chargement…');
   UID=0;
   buildLivret(nom);
   scalePages();
-  const state=await idbLoad(nom);
+  // 1. Essai local (IDB)
+  let state=await idbLoad(nom);
+  // 2. Si absent localement et token GitHub → charger depuis GitHub
+  if(!state && getGHToken()){
+    showBadge('loading','☁ Chargement GitHub…');
+    state=await ghLoad(nom);
+    if(state){ await idbSave(nom,state); stateCache[nom]=state; }
+  }
   if(state){
     stateCache[nom]=state;
     applyState(state);
-    showBadge('saved','💾 Chargé — '+fmtH(state.savedAt));
+    showBadge('saved',(getGHToken()?'☁ ':'💾 ')+'Chargé — '+fmtH(state.savedAt));
   } else {
     prefillNom(nom);
     showBadge('new','✦ Nouveau livret');
@@ -741,7 +781,14 @@ async function doSave(){
     await idbSave(currentStag,state);
     stateCache[currentStag]=state;
     dirty=false;
-    showBadge('saved','💾 Sauvegardé — '+fmtH(state.savedAt));
+    // Sauvegarde GitHub automatique si token configuré
+    if(getGHToken()){
+      showBadge('saving','☁ Sync GitHub…');
+      const ok=await ghSave(currentStag,state);
+      showBadge('saved', ok ? '☁ GitHub — '+fmtH(state.savedAt) : '💾 Local — '+fmtH(state.savedAt));
+    } else {
+      showBadge('saved','💾 Sauvegardé — '+fmtH(state.savedAt));
+    }
     renderSidebar();
     updateStorageStatus(SESSION.stagiaires.filter(n=>stateCache[n]).length);
   }catch(err){
@@ -1101,108 +1148,158 @@ function jsel(el,k){
 }
 
 /* ══════════════════════════════════════════════════
-   SHAREPOINT — Lien de partage direct SDIS 38
-   Les formateurs se connectent avec leur compte SDIS 38
-   Dossier : COD 2 / 12-16 octobre 2026
+   GITHUB — Sauvegarde automatique des livrets
+   Dépôt privé : pmauries-oss/cod2-data
+   API GitHub REST — token PAT fine-grained
    ══════════════════════════════════════════════════ */
 
-// Lien du dossier SharePoint COD 2 (partagé au sein du SDIS 38)
-const SP_FOLDER_LINK = 'https://sdis38.sharepoint.com/:f:/s/ConduiteSDIS382/IgBu0-6Onn7mQamPdq12j9phAbZEzqwtYZEK86FqjimA2pQ?e=zf3evm';
+const GH_OWNER = 'pmauries-oss';
+const GH_REPO  = 'cod2-data';
 
-// Ouvrir le dossier SharePoint dans un nouvel onglet
-function openSPFolder(){
-  window.open(SP_FOLDER_LINK,'_blank','noopener');
+function getGHToken(){ return localStorage.getItem('cod2_gh_token')||''; }
+
+function ghFilePath(nom){
+  const sess=SESSION.name.replace(/[^a-z0-9]/gi,'_');
+  return `sessions/${sess}/etat_${nom}.json`;
 }
 
-// Envoyer LE livret actuel vers SharePoint
-async function sendToSP(){
-  if(!currentStag){ toast('Sélectionnez un stagiaire d\'abord','err'); return; }
-  // S'assurer que l'état est capturé
+function ghHeaders(){
+  return { Authorization:`Bearer ${getGHToken()}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2022-11-28' };
+}
+
+// Encoder en base64 (compatible Unicode)
+function toB64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function fromB64(b64){ return decodeURIComponent(escape(atob(b64.replace(/\n/g,'')))); }
+
+// Récupérer le SHA d'un fichier existant (nécessaire pour les mises à jour)
+async function ghGetSHA(path){
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,{headers:ghHeaders()});
+    if(r.ok){ const d=await r.json(); return d.sha||null; }
+  }catch{}
+  return null;
+}
+
+// Sauvegarder un livret sur GitHub
+async function ghSave(nom, state){
+  const token=getGHToken(); if(!token) return false;
+  try{
+    const path=ghFilePath(nom);
+    const sha=await ghGetSHA(path);
+    const body={
+      message:`Livret ${nom} — ${new Date().toLocaleString('fr-FR')}`,
+      content:toB64(JSON.stringify(state,null,2)),
+    };
+    if(sha) body.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+      {method:'PUT',headers:ghHeaders(),body:JSON.stringify(body)});
+    return r.ok;
+  }catch{return false;}
+}
+
+// Charger un livret depuis GitHub
+async function ghLoad(nom){
+  const token=getGHToken(); if(!token) return null;
+  try{
+    const path=ghFilePath(nom);
+    const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,{headers:ghHeaders()});
+    if(!r.ok) return null;
+    const d=await r.json();
+    return JSON.parse(fromB64(d.content));
+  }catch{return null;}
+}
+
+// Synchroniser TOUS les livrets depuis GitHub
+async function ghSyncAll(){
+  const token=getGHToken();
+  if(!token){ toast('⚠ Configurez le token GitHub d\'abord','err'); openGHCfg(); return; }
+  const sess=SESSION.name.replace(/[^a-z0-9]/gi,'_');
+  showBadge('saving','☁ Synchro GitHub…');
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/sessions/${sess}`,{headers:ghHeaders()});
+    if(r.status===404){ toast('Aucun livret trouvé sur GitHub pour cette session','info'); showBadge('new','✦ Aucun livret GitHub'); return; }
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const files=await r.json();
+    let n=0;
+    for(const f of (Array.isArray(files)?files:[])){
+      if(!f.name.endsWith('.json')) continue;
+      const nom=f.name.replace('etat_','').replace('.json','');
+      try{
+        const fr=await fetch(f.download_url,{headers:{'Authorization':`Bearer ${token}`}});
+        if(fr.ok){ const s=await fr.json(); stateCache[nom]=s; await idbSave(nom,s); n++; }
+      }catch{}
+    }
+    renderSidebar();
+    updateStorageStatus(SESSION.stagiaires.filter(x=>stateCache[x]).length);
+    showBadge('saved',`☁ ${n} livret(s) chargé(s) depuis GitHub`);
+    if(n>0) toast(`✅ ${n} livret(s) synchronisé(s) depuis GitHub`,'ok');
+    else toast('ℹ Aucun livret trouvé pour cette session','info');
+  }catch(e){ showBadge('error','❌ '+e.message.substring(0,40)); toast('❌ Erreur GitHub : '+e.message,'err'); }
+}
+
+// Bouton ☁ GitHub de la topbar — sauvegarde le livret actuel
+async function ghSendCurrent(){
+  if(!currentStag){ toast('Sélectionnez un stagiaire','err'); return; }
+  const token=getGHToken();
+  if(!token){ toast('⚠ Configurez le token GitHub d\'abord','err'); openGHCfg(); return; }
   await forceSave();
   const state=stateCache[currentStag]||captureState();
-  if(!state){ toast('Aucune donnée à envoyer','err'); return; }
-  const fname='COD2_livret_'+currentStag+'_'+SESSION.name.replace(/[^a-z0-9]/gi,'_')+'.json';
-  const json=JSON.stringify(state,null,2);
-  // Mobile : Web Share API → OneDrive/Fichiers
-  if(navigator.share){
-    try{
-      const file=new File([json],fname,{type:'application/json'});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){
-        await navigator.share({
-          files:[file],
-          title:'Livret COD2 — '+currentStag,
-          text:'Livret d\'évaluation COD 2 PL SDIS 38 — '+currentStag+'\nEnregistrez ce fichier dans le dossier SharePoint COD 2.'
-        });
-        toast('✅ Livret partagé — enregistrez-le dans le dossier COD 2','ok');
-        return;
-      }
-    }catch(e){if(e.name==='AbortError')return;}
+  if(!state){ toast('Aucune donnée','err'); return; }
+  showBadge('saving','☁ Envoi GitHub…');
+  const ok=await ghSave(currentStag,state);
+  if(ok){
+    showBadge('saved','☁ Sauvegardé GitHub — '+fmtH(new Date().toISOString()));
+    toast('✅ Livret de '+currentStag+' sauvegardé sur GitHub','ok');
+  } else {
+    showBadge('error','❌ Erreur GitHub');
+    toast('❌ Échec de la sauvegarde GitHub','err');
   }
-  // Desktop : télécharger + ouvrir le dossier SP
-  dlJSON(json,fname);
-  setTimeout(()=>window.open(SP_FOLDER_LINK,'_blank','noopener'),400);
-  showToast_SP(fname);
 }
 
-// Notification d'instructions pour le desktop
-function showToast_SP(fname){
-  let overlay=document.getElementById('sp-overlay');
-  if(!overlay){
-    overlay=document.createElement('div');
-    overlay.id='sp-overlay';
-    overlay.style.cssText='position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
-    overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
-    document.body.appendChild(overlay);
+// Config token GitHub
+function openGHCfg(){
+  closeSidebar();
+  document.getElementById('gh-token-input').value=getGHToken();
+  document.getElementById('gh-cfg-msg').textContent='';
+  document.getElementById('mo-gh').classList.add('open');
+}
+async function saveGHToken(){
+  const token=document.getElementById('gh-token-input').value.trim();
+  const msgEl=document.getElementById('gh-cfg-msg');
+  if(!token||!token.startsWith('github_pat_')){ msgEl.style.color='var(--rouge)'; msgEl.textContent='⚠ Le token doit commencer par github_pat_'; return; }
+  msgEl.style.color='#888'; msgEl.textContent='Vérification…';
+  // Vérifier que le token est valide
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`,{headers:{Authorization:`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28'}});
+    if(!r.ok) throw new Error('Token invalide ou dépôt cod2-data introuvable (HTTP '+r.status+')');
+    localStorage.setItem('cod2_gh_token',token);
+    updateGHUI();
+    msgEl.style.color='#27AE60'; msgEl.textContent='✅ Token valide — connexion établie !';
+    setTimeout(()=>{ closeM('mo-gh'); ghSyncAll(); },1500);
+  }catch(e){ msgEl.style.color='var(--rouge)'; msgEl.textContent='❌ '+e.message; }
+}
+function ghClearToken(){
+  localStorage.removeItem('cod2_gh_token');
+  document.getElementById('gh-token-input').value='';
+  document.getElementById('gh-cfg-msg').style.color='#888';
+  document.getElementById('gh-cfg-msg').textContent='Token supprimé.';
+  updateGHUI();
+}
+function updateGHUI(){
+  const token=getGHToken();
+  const stEl=document.getElementById('gh-status');
+  const syncBtn=document.getElementById('btn-gh-sync');
+  const cfgBtn=document.getElementById('btn-gh-cfg');
+  if(token){
+    if(stEl){stEl.textContent='✅ Connecté à pmauries-oss/cod2-data';stEl.style.color='#82E0AA';}
+    if(syncBtn) syncBtn.style.display='block';
+    if(cfgBtn) cfgBtn.textContent='⚙ Modifier le token GitHub';
+  } else {
+    if(stEl){stEl.textContent='Token non configuré';stEl.style.color='rgba(200,220,200,.6)';}
+    if(syncBtn) syncBtn.style.display='none';
+    if(cfgBtn) cfgBtn.textContent='⚙ Configurer le token GitHub';
   }
-  overlay.innerHTML=`
-    <div style="background:white;border-radius:14px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:'Barlow',sans-serif;">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#0078D4;margin-bottom:16px;letter-spacing:1px;">☁ Envoi vers SharePoint</div>
-      <div style="font-size:12px;line-height:1.7;color:#333;">
-        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;"><div style="width:24px;height:24px;background:#0078D4;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;">1</div><span>Le fichier <strong>${fname}</strong> a été téléchargé sur votre appareil.</span></div>
-        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;"><div style="width:24px;height:24px;background:#0078D4;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;">2</div><span>Le dossier SharePoint COD 2 vient de s'ouvrir. <strong>Connectez-vous avec votre compte SDIS 38</strong> si demandé.</span></div>
-        <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:24px;height:24px;background:#0078D4;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;">3</div><span>Cliquez sur <strong>+ Nouveau → Charger des fichiers</strong> et sélectionnez le fichier téléchargé.</span></div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:18px;">
-        <button onclick="document.getElementById('sp-overlay').remove()" style="flex:1;background:#E0E0E0;border:none;border-radius:7px;padding:10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;">Fermer</button>
-        <button onclick="window.open(SP_FOLDER_LINK,'_blank','noopener')" style="flex:1;background:#0078D4;color:white;border:none;border-radius:7px;padding:10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;">📂 Rouvrir SharePoint</button>
-      </div>
-    </div>`;
 }
-
-// Envoyer TOUS les livrets vers SharePoint (zip ou séquentiellement)
-async function syncAllToSP(){
-  const stags=SESSION.stagiaires.filter(n=>stateCache[n]);
-  if(!stags.length){ toast('Aucun livret à envoyer','err'); return; }
-  // Créer un fichier ZIP-like (en réalité un export groupé)
-  const all={session:SESSION,exported:new Date().toISOString(),livrets:{}};
-  stags.forEach(n=>all.livrets[n]=stateCache[n]);
-  const fname='COD2_session_'+SESSION.name.replace(/[^a-z0-9]/gi,'_')+'_COMPLET.json';
-  const json=JSON.stringify(all,null,2);
-  if(navigator.share){
-    try{
-      const file=new File([json],fname,{type:'application/json'});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){
-        await navigator.share({files:[file],title:'Session COD2 — '+SESSION.name});
-        toast('✅ Session complète partagée ('+stags.length+' livrets)','ok');
-        return;
-      }
-    }catch(e){if(e.name==='AbortError')return;}
-  }
-  dlJSON(json,fname);
-  setTimeout(()=>window.open(SP_FOLDER_LINK,'_blank','noopener'),400);
-  showToast_SP(fname);
-}
-
-// Fonctions stub pour compatibilité (plus nécessaires sans PKCE)
-function updateSpUI(){}
-function _getTok(){ return null; }
-function spSave(){ return Promise.resolve(false); }
-function spLoad(){ return Promise.resolve(null); }
-function spSyncAllStatuses(){ return Promise.resolve(); }
-function openSpCfg(){
-  toast('Configuration non nécessaire — lien SharePoint intégré','info');
-}
-function saveSpCfg(){}
 
 
 
@@ -1212,8 +1309,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(isAuthenticated()){
     hideLoginScreen();
     await initDB();
+    updateGHUI();
     const cached=SESSION.stagiaires.filter(n=>stateCache[n]);
-    if(cached.length) toast('✅ '+cached.length+' livret(s) en mémoire','ok');
+    if(cached.length) toast('✅ '+cached.length+' livret(s) en mémoire locale','ok');
+    // Si token GitHub configuré : synchro silencieuse au démarrage
+    if(getGHToken()) setTimeout(()=>ghSyncAll(),800);
   } else {
     showLoginScreen();
     setTimeout(()=>initDB(),300);
