@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Hub COD 2 PL — SDIS 38</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overscroll-behavior:none;}
+body{font-family:'Barlow',sans-serif;font-size:11px;color:#2C2C2C;background:#1A2840;display:flex;flex-direction:column;overflow:hidden;}
+
+:root{
+  --rouge:#C0392B;--rouge-f:#922B21;--gf:#2C2C2C;--gm:#5D6D7E;
+  --gc:#BDC3C7;--gbg:#ECF0F1;--vert:#27AE60;--jaune:#F39C12;
+  --bd:#C0C0C0;--blanc:#fff;
+  --csh:#2471A3;--cfh:#B7770D;--cs:#EBF5FB;--cf:#FEF9E7;
+  --sb:#1A2840;--sbh:#243352;--sba:#0078D4;--sbt:#C8D8E8;
+}
+
+/* ══ TOP BAR ════════════════════════════════════ */
+#topbar{
+  background:#1E3050;color:white;
+  display:flex;align-items:center;gap:10px;
+  padding:0 12px;height:52px;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
+  z-index:50;
+}
+#burger-btn{
+  width:40px;height:40px;background:rgba(255,255,255,.1);border:none;
+  border-radius:8px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;flex-shrink:0;
+}
+#burger-btn span{display:block;width:20px;height:2px;background:white;border-radius:2px;transition:all .2s;}
+#burger-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+#burger-btn.open span:nth-child(2){opacity:0;}
+#burger-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+.tb-stag{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:1px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-badge{font-size:11px;padding:4px 10px;border-radius:12px;white-space:nowrap;display:none;}
+.tb-badge.saved{background:rgba(39,174,96,.25);color:#82E0AA;display:inline-block;}
+.tb-badge.pending{background:rgba(243,156,18,.25);color:#F9E79F;display:inline-block;}
+.tb-badge.saving{background:rgba(0,120,212,.25);color:#AED6F1;display:inline-block;}
+.tb-badge.error{background:rgba(192,57,43,.25);color:#F1948A;display:inline-block;}
+.tb-badge.new{background:rgba(120,120,120,.2);color:#AAB0B6;display:inline-block;}
+.tb-btn{height:36px;padding:0 12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:white;border-radius:6px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:background .12s;}
+.tb-btn:hover,.tb-btn:active{background:rgba(255,255,255,.22);}
+.tb-btn:disabled{opacity:.35;cursor:default;}
+.tb-btn.blue{background:rgba(0,120,212,.4);border-color:rgba(0,120,212,.6);}
+.tb-btn.blue:hover,.tb-btn.blue:active{background:rgba(0,120,212,.65);}
+.tb-btn.green{background:rgba(39,174,96,.4);border-color:rgba(39,174,96,.6);}
+.tb-btn.green:hover{background:rgba(39,174,96,.6);}
+
+/* ══ BODY AREA ══════════════════════════════════ */
+#body-area{flex:1;display:flex;overflow:hidden;position:relative;}
+
+/* ══ SIDEBAR ════════════════════════════════════ */
+#sidebar{
+  width:260px;min-width:260px;height:100%;background:var(--sb);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:3px 0 10px rgba(0,0,0,.3);z-index:40;
+  transition:transform .25s ease;
+}
+/* Mobile: sidebar hors écran par défaut */
+@media(max-width:899px){
+  #sidebar{position:absolute;left:0;top:0;height:100%;transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:39;}
+  #overlay.show{display:block;}
+}
+@media(min-width:900px){
+  #burger-btn{display:none;}
+  #overlay{display:none!important;}
+}
+
+.sb-logo-row{background:var(--rouge);padding:12px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-logo{width:38px;height:38px;background:white;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--rouge);font-family:'Barlow Condensed',sans-serif;font-size:7px;font-weight:800;text-align:center;flex-shrink:0;}
+.sb-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:white;letter-spacing:1px;}
+.sb-sub{font-size:10px;color:rgba(255,255,255,.7);}
+
+.sb-storage{padding:8px 12px;background:rgba(0,0,0,.2);flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-storage-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.38);margin-bottom:3px;}
+.sb-storage-val{font-size:11px;color:var(--sbt);}
+.sb-storage-val.ok{color:#82E0AA;}
+.sb-storage-val.no{color:#F9E79F;}
+
+.sess-zone{padding:7px 12px 5px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;}
+.sz-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.38);margin-bottom:2px;}
+.sz-val{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--sbt);}
+
+#stag-list{flex:1;overflow-y:auto;padding:4px 0;-webkit-overflow-scrolling:touch;}
+.si{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .1s;border-left:3px solid transparent;min-height:48px;-webkit-tap-highlight-color:rgba(0,0,0,0);}
+.si:hover,.si:active{background:var(--sbh);}
+.si.active{background:var(--sba);border-left-color:white;}
+.si-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--sbt);flex:1;}
+.si.active .si-name{color:white;}
+.si-time{font-size:9px;color:rgba(255,255,255,.35);white-space:nowrap;}
+.si.active .si-time{color:rgba(255,255,255,.6);}
+.sdot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.2);}
+.sdot.vide{background:#4A5568;}.sdot.en_cours{background:#2E86C1;}
+.sdot.valide{background:#27AE60;}.sdot.ajourne{background:#E67E22;}.sdot.nonvalide{background:#C0392B;}
+
+.sb-footer{padding:10px 12px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+.sb-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--sbt);border-radius:6px;padding:9px 10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-align:left;transition:background .1s;width:100%;display:flex;align-items:center;gap:8px;min-height:44px;}
+.sb-btn:hover,.sb-btn:active{background:rgba(255,255,255,.16);}
+.sb-btn.imp{background:rgba(0,120,212,.3);border-color:rgba(0,120,212,.5);}
+
+/* ══ MAIN AREA ══════════════════════════════════ */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#BABABA;}
+#scroll{flex:1;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch;}
+
+/* ══ LIVRET SCALER ══════════════════════════════ */
+#lscale{transform-origin:top center;will-change:transform;}
+
+/* ══ WELCOME ════════════════════════════════════ */
+#welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;padding:20px;text-align:center;}
+#welcome .wi{font-size:56px;opacity:.3;margin-bottom:14px;}
+#welcome h2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#5A7A9A;margin-bottom:8px;}
+#welcome p{font-size:12px;color:#7A8A9A;max-width:380px;line-height:1.6;margin-bottom:16px;}
+.setup-card{background:white;border-radius:10px;padding:16px 18px;max-width:400px;box-shadow:0 4px 18px rgba(0,0,0,.15);}
+.setup-card h3{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--sba);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;}
+.setup-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;font-size:11px;line-height:1.5;color:#444;text-align:left;}
+.sn{width:22px;height:22px;background:var(--sba);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;flex-shrink:0;}
+
+/* ══ LIVRET PAGE ════════════════════════════════ */
+.page{width:210mm;background:white;margin:0 auto 12px;padding:10mm;position:relative;box-shadow:0 3px 14px rgba(0,0,0,.2);}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:8px;border-bottom:3px solid var(--rouge);padding-bottom:6px;}
+.logo-c{width:38px;height:38px;background:var(--rouge);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:'Barlow Condensed',sans-serif;font-size:7px;font-weight:800;text-align:center;flex-shrink:0;}
+.cod-b{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:800;color:var(--gc);line-height:1;opacity:.3;}
+.ptb{background:var(--rouge);color:white;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:5px 10px;margin:-10mm -10mm 8px;display:flex;align-items:center;gap:10px;}
+.ptb .sd{font-size:11px;font-weight:400;opacity:.8;margin-left:auto;}
+.lsm{width:26px;height:26px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--rouge);font-family:'Barlow Condensed',sans-serif;font-size:6px;font-weight:800;text-align:center;flex-shrink:0;}
+.tc{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
+.box{border:1.5px solid var(--bd);border-radius:4px;overflow:hidden;}
+.bxl{background:var(--gf);color:white;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 7px;}
+.bxc{padding:5px 7px;}
+.fr{display:flex;align-items:baseline;gap:5px;margin-bottom:4px;}
+.fr label{font-size:10px;color:var(--gm);white-space:nowrap;min-width:85px;}
+.fr input[type=text]{flex:1;border:none;border-bottom:1px solid var(--bd);padding:2px 3px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gf);background:transparent;outline:none;min-height:28px;}
+.fr input[type=text]:focus{border-bottom-color:var(--rouge);}
+.sbd{display:flex;align-items:stretch;border:1.5px solid var(--bd);border-radius:4px;margin-bottom:5px;overflow:hidden;}
+.sbd .bl{background:var(--gf);color:white;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);padding:7px 4px;display:flex;align-items:center;justify-content:center;min-width:20px;}
+.sbd .bc{flex:1;padding:5px 7px;}
+/* Eval tables */
+.eg{width:100%;border-collapse:collapse;}
+.eg td,.eg th{border:1px solid var(--bd);padding:3px 3px;vertical-align:middle;}
+.eg th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-align:center;}
+.eg td.comp{font-size:10.5px;font-weight:500;}
+.eg th.csh{background:var(--csh);color:white;} .eg td.csd{background:var(--cs);text-align:center;}
+.eg th.cfh{background:var(--cfh);color:white;} .eg td.cfd{background:var(--cf);text-align:center;}
+.eg th.css{background:#2980B9;color:white;font-size:14px;} .eg th.cfs{background:#CA8C0A;color:white;font-size:14px;}
+.edt{width:100%;border-collapse:collapse;font-size:10px;}
+.edt th{font-family:'Barlow Condensed',sans-serif;font-size:8.5px;font-weight:700;padding:3px 2px;text-align:center;color:white;}
+.edt th.dk{background:var(--gf);} .edt th.csh{background:var(--csh);} .edt th.cfh{background:var(--cfh);}
+.edt th.css{background:#2980B9;font-size:12px;} .edt th.cfs{background:#CA8C0A;font-size:12px;}
+.edt th.sp{background:var(--gf);width:4px;padding:0;border:none;}
+.edt td{border:1px solid var(--bd);padding:2px 1px;vertical-align:middle;}
+.edt td.cm{font-size:9px;font-weight:600;background:#F8F9FA;width:25%;}
+.edt td.ce{font-size:8.5px;width:29%;}
+.edt td.nr{text-align:center;width:20px;}
+.edt td.nc{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gm);width:16px;background:#F8F9FA;}
+.edt td.sc{text-align:center;width:21px;padding:1px;}
+.edt td.bgS{background:#F0F8FF;} .edt td.bgF{background:#FFFBF0;}
+.edt td.spc{width:4px;background:var(--gf);border:none;padding:0;}
+/* Smileys */
+.sm{width:20px;height:20px;background:transparent;border:1.5px solid var(--bd);border-radius:50%;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;justify-content:center;transition:all .12s;user-select:none;vertical-align:middle;-webkit-tap-highlight-color:transparent;}
+@media(hover:none){.sm{width:24px;height:24px;font-size:14px;}}
+.sm.s1{background:#FADBD8;border-color:#C0392B;box-shadow:0 0 0 1.5px #C0392B;}
+.sm.s2{background:#FEF9E7;border-color:#D4AC0D;box-shadow:0 0 0 1.5px #D4AC0D;}
+.sm.s3{background:#EBF5FB;border-color:#2471A3;box-shadow:0 0 0 1.5px #2471A3;}
+.sm.s4{background:#EAFAF1;border-color:#27AE60;box-shadow:0 0 0 1.5px #27AE60;}
+.sm.f1{background:#FADBD8;border-color:#C0392B;box-shadow:0 0 0 2px #C0392B,0 0 0 3.5px white,0 0 0 5px #C0392B;}
+.sm.f2{background:#FEF9E7;border-color:#D4AC0D;box-shadow:0 0 0 2px #D4AC0D,0 0 0 3.5px white,0 0 0 5px #D4AC0D;}
+.sm.f3{background:#EBF5FB;border-color:#2471A3;box-shadow:0 0 0 2px #2471A3,0 0 0 3.5px white,0 0 0 5px #2471A3;}
+.sm.f4{background:#EAFAF1;border-color:#27AE60;box-shadow:0 0 0 2px #27AE60,0 0 0 3.5px white,0 0 0 5px #27AE60;}
+.nrt{cursor:pointer;font-size:8px;color:var(--gm);font-style:italic;padding:1px 2px;border-radius:2px;}
+.nrt.nra{background:var(--gm);color:white;}
+.ld{display:flex;gap:10px;font-size:9px;color:var(--gm);margin:2px 0 3px;align-items:center;}
+.lb{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:10px;font-weight:700;font-size:9px;}
+.lb.st{background:var(--cs);color:var(--csh);border:1px solid var(--csh);}
+.lb.fo{background:var(--cf);color:var(--cfh);border:1px solid var(--cfh);}
+.tr{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.sn2{font-size:9px;color:var(--gm);}
+.onb{display:inline-flex;align-items:center;justify-content:center;width:28px;height:26px;border:1.5px solid var(--bd);border-radius:4px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--gm);transition:all .13s;-webkit-tap-highlight-color:transparent;}
+.onb.aO{background:var(--vert);color:white;border-color:var(--vert);}
+.onb.aN{background:var(--rouge);color:white;border-color:var(--rouge);}
+.ni{width:52px;border:1.5px solid var(--bd);border-radius:3px;padding:3px 4px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;outline:none;min-height:32px;}
+.ni:focus{border-color:var(--rouge);}
+.jo{display:flex;align-items:flex-start;gap:6px;padding:6px;border-radius:4px;margin-bottom:4px;border:1.5px solid var(--bd);cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent;min-height:44px;}
+.jo:active{transform:scale(.98);}
+.jo.sv{background:#EAFAF1;border-color:var(--vert);} .jo.sa1{background:#FEF9E7;border-color:var(--jaune);}
+.jo.sa2{background:#FDF2E9;border-color:#E67E22;} .jo.snv{background:#FADBD8;border-color:var(--rouge);}
+.jo strong{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;}
+.jo small{font-size:9.5px;color:var(--gm);display:block;}
+.vr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:3px;}
+.vc{border:1px solid var(--bd);border-radius:3px;padding:4px;text-align:center;}
+.vc .vt{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gm);text-decoration:underline;margin-bottom:2px;}
+.vs{height:26px;border-bottom:1px dashed var(--bd);margin-top:3px;}
+.ah{background:var(--gbg);border:1.5px solid var(--bd);border-radius:4px;padding:4px 7px;margin-bottom:4px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.ah .at{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;color:var(--gm);letter-spacing:1px;text-transform:uppercase;flex:1;min-width:80px;}
+.vb{padding:4px 8px;border:1.5px solid var(--bd);border-radius:4px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gm);background:white;transition:all .13s;min-height:32px;-webkit-tap-highlight-color:transparent;}
+.vb.sel{background:var(--rouge);color:white;border-color:var(--rouge);}
+.apb{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:5px;}
+.apbx{border:1.5px solid var(--bd);border-radius:3px;overflow:hidden;}
+.abt{background:var(--gf);color:white;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-align:center;padding:2px;}
+.abt.ef{background:var(--rouge-f);}
+textarea.apt{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;font-size:10px;outline:none;background:transparent;min-height:38px;padding:3px 5px;}
+.dr{display:flex;align-items:center;justify-content:flex-end;gap:5px;font-size:9.5px;color:var(--rouge);font-style:italic;padding:2px 5px;}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:3px;font-size:9.5px;}
+.ai{display:flex;align-items:center;gap:4px;}
+.ack{width:20px;height:20px;border:1px solid var(--bd);border-radius:3px;cursor:pointer;text-align:center;font-size:10px;line-height:20px;transition:all .13s;-webkit-tap-highlight-color:transparent;}
+.ack.ck{background:var(--rouge);color:white;border-color:var(--rouge);}
+.rb{border:1.5px solid var(--bd);border-radius:3px;padding:3px 7px;margin-top:5px;}
+.rt{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gm);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+textarea.rest{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;font-size:10px;outline:none;background:transparent;min-height:30px;}
+.atbx{background:var(--gc);border:1.5px solid var(--bd);border-radius:4px;padding:5px 8px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--gf);}
+.atbx .sub{font-size:9px;font-weight:400;color:var(--gm);display:block;}
+.eg2{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px;}
+.ei{border:1px solid var(--bd);border-radius:3px;padding:3px 6px;display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;cursor:pointer;min-height:32px;}
+.ei.ck{background:#FADBD8;border-color:var(--rouge);}
+.mck{width:18px;height:18px;border:1.5px solid var(--bd);border-radius:2px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:all .13s;-webkit-tap-highlight-color:transparent;}
+.mck.ck{background:var(--rouge);color:white;border-color:var(--rouge);}
+.cr{display:flex;align-items:center;gap:7px;margin-bottom:3px;font-size:10px;}
+.cr label{min-width:70px;}
+.cr input{flex:1;border:none;border-bottom:1px solid var(--bd);padding:2px 3px;font-size:11px;outline:none;background:transparent;min-height:28px;}
+textarea.pat{width:100%;border:none;resize:none;font-family:'Barlow',sans-serif;font-size:10px;outline:none;background:transparent;min-height:60px;}
+.sep{border:none;border-top:1px dashed var(--gc);margin:5px 0;}
+.pnb{position:absolute;bottom:7mm;right:10mm;font-size:9px;color:var(--gc);}
+.pmaj{position:absolute;bottom:7mm;left:10mm;font-size:9px;color:var(--gc);}
+
+/* ══ MODAL ══════════════════════════════════════ */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.mo.open{display:flex;}
+.mb{background:white;border-radius:10px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.35);}
+.mb h3{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:#0078D4;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.mb p{font-size:12px;line-height:1.6;margin-bottom:10px;color:#333;}
+.mb label{font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:4px;}
+.mb input,.mb textarea{width:100%;border:1.5px solid #C0C0C0;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;margin-bottom:10px;font-family:'Barlow',sans-serif;min-height:44px;}
+.mb input:focus,.mb textarea:focus{border-color:#0078D4;}
+.mac{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap;}
+.bm{padding:10px 18px;border-radius:7px;border:none;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;transition:all .13s;min-height:44px;}
+.bm.p{background:#0078D4;color:white;} .bm.p:hover{background:#005A9E;}
+.bm.g{background:#107C10;color:white;} .bm.g:hover{background:#0A5D0A;}
+.bm.c{background:#E0E0E0;color:#333;} .bm.c:hover{background:#C0C0C0;}
+
+/* ══ ÉCRAN DE CONNEXION ═════════════════════════ */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--sb);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+}
+.login-logo{width:72px;height:72px;background:var(--rouge);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;text-align:center;margin-bottom:18px;box-shadow:0 4px 20px rgba(192,57,43,.5);}
+.login-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:white;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:4px;}
+.login-sub{font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:32px;}
+.login-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:28px;width:100%;max-width:360px;}
+.login-label{font-size:12px;color:rgba(255,255,255,.55);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:block;}
+.login-input-wrap{position:relative;margin-bottom:14px;}
+#pwd-input{
+  width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18);
+  border-radius:8px;padding:14px 48px 14px 16px;
+  font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;
+  color:white;outline:none;letter-spacing:3px;transition:border-color .15s;
+  -webkit-text-security:disc;
+}
+#pwd-input:focus{border-color:var(--sba);}
+#pwd-input.err{border-color:var(--rouge);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#pwd-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;padding:4px;-webkit-tap-highlight-color:transparent;}
+#pwd-error{font-size:12px;color:#F1948A;min-height:18px;margin-bottom:10px;text-align:center;}
+#login-btn{
+  width:100%;background:var(--rouge);border:none;border-radius:8px;
+  padding:15px;color:white;font-family:'Barlow Condensed',sans-serif;
+  font-size:17px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  cursor:pointer;transition:background .15s;min-height:52px;
+}
+#login-btn:hover,#login-btn:active{background:var(--rouge-f);}
+.login-hint{font-size:11px;color:rgba(255,255,255,.28);text-align:center;margin-top:16px;line-height:1.5;}
+#login-screen.hidden{display:none;}
+
+/* ══ MODAL CHANGEMENT MDP ═══════════════════════ */
+#mo-pwd h3{color:var(--rouge)!important;}
+.pwd-field{position:relative;margin-bottom:10px;}
+.pwd-field input{padding-right:48px!important;}
+.pwd-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:#888;-webkit-tap-highlight-color:transparent;}
+
+/* ══ TOAST ══════════════════════════════════════ */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);z-index:500;padding:11px 20px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;box-shadow:0 4px 18px rgba(0,0,0,.28);transition:transform .3s ease;pointer-events:none;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ══ PRINT ══════════════════════════════════════ */
+@media print{
+  #topbar,#sidebar,#overlay{display:none!important;}
+  body{background:white;overflow:visible;}
+  #body-area,#main,#scroll{display:block;height:auto;overflow:visible;}
+  #lscale{transform:none!important;}
+  .page{margin:0;box-shadow:none;page-break-after:always;width:210mm!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ ÉCRAN DE CONNEXION ══════════════════════════ -->
+<div id="login-screen">
+  <div class="login-logo">SDIS<br>38</div>
+  <div class="login-title">COD 2 PL</div>
+  <div class="login-sub">Hub Formateurs — SDIS 38 / GFOR</div>
+  <div class="login-card">
+    <label class="login-label" for="pwd-input">Mot de passe</label>
+    <div class="login-input-wrap">
+      <input type="password" id="pwd-input" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')checkPwd()">
+      <button id="pwd-toggle" onclick="togglePwdVis()" tabindex="-1" type="button">👁</button>
+    </div>
+    <div id="pwd-error"></div>
+    <button id="login-btn" onclick="checkPwd()">🔓 Accéder aux livrets</button>
+    <div class="login-hint">Mot de passe par défaut : <strong>COD2-SDIS38</strong><br>Modifiable depuis la barre latérale une fois connecté.</div>
+  </div>
+</div>
+
+<!-- ══ MODAL CHANGEMENT MDP ══════════════════════ -->
+<div class="mo" id="mo-pwd">
+  <div class="mb" style="max-width:420px;">
+    <h3>🔐 Changer le mot de passe</h3>
+    <p>Le nouveau mot de passe sera demandé à chaque connexion sur tous les appareils qui ouvrent ce fichier.</p>
+    <label>Mot de passe actuel :</label>
+    <div class="pwd-field">
+      <input type="password" id="pwd-current" placeholder="Mot de passe actuel">
+      <button class="pwd-eye" onclick="toggleVis('pwd-current')" type="button">👁</button>
+    </div>
+    <label>Nouveau mot de passe :</label>
+    <div class="pwd-field">
+      <input type="password" id="pwd-new1" placeholder="Nouveau mot de passe">
+      <button class="pwd-eye" onclick="toggleVis('pwd-new1')" type="button">👁</button>
+    </div>
+    <label>Confirmer le nouveau mot de passe :</label>
+    <div class="pwd-field">
+      <input type="password" id="pwd-new2" placeholder="Répéter le nouveau mot de passe">
+      <button class="pwd-eye" onclick="toggleVis('pwd-new2')" type="button">👁</button>
+    </div>
+    <div id="pwd-change-err" style="font-size:12px;color:var(--rouge);min-height:18px;margin-bottom:8px;"></div>
+    <div class="mac">
+      <button class="bm c" onclick="closeM('mo-pwd')">Annuler</button>
+      <button class="bm p" onclick="changePwd()">✅ Changer le mot de passe</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOP BAR ════════════════════════════════════ -->
+<div id="topbar">
+  <button id="burger-btn" onclick="toggleSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="tb-stag" id="tb-name">Hub Formateurs — COD 2 PL</div>
+  <div class="tb-badge" id="save-badge"></div>
+  <button class="tb-btn" onclick="sendToSP()" id="btn-sp" disabled title="Envoyer ce livret vers SharePoint SDIS 38" style="background:rgba(0,120,212,.4);border-color:rgba(0,120,212,.7);">☁ SP</button>
+  <button class="tb-btn green" onclick="shareStag()" id="btn-share" disabled title="Exporter / Partager ce livret">📤</button>
+  <button class="tb-btn blue" onclick="forceSave()" id="btn-save" disabled>💾</button>
+</div>
+
+<!-- ══ BODY AREA ══════════════════════════════════ -->
+<div id="body-area">
+  <!-- Overlay mobile -->
+  <div id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- ══ SIDEBAR ══════════════════════════════════ -->
+  <aside id="sidebar">
+    <div class="sb-logo-row">
+      <div class="sb-logo">SDIS<br>38</div>
+      <div><div class="sb-title">COD 2 PL</div><div class="sb-sub">Hub Formateurs</div></div>
+    </div>
+
+    <div class="sb-storage">
+      <div class="sb-storage-lbl">💾 Stockage local</div>
+      <div class="sb-storage-val" id="storage-status">Chargement…</div>
+    </div>
+    <div class="sb-storage" style="background:rgba(0,120,212,.12);border-bottom:1px solid rgba(0,120,212,.2);">
+      <div class="sb-storage-lbl" style="color:rgba(0,120,212,.7);">☁ Dossier SharePoint COD 2</div>
+      <div class="sb-storage-val" style="color:#82E0AA;font-size:10px;">Connexion SDIS 38 automatique</div>
+      <button class="fz-pick-btn" onclick="openSPFolder()" style="margin-top:6px;background:rgba(0,120,212,.5);border-color:rgba(0,120,212,.8);">📂 Ouvrir le dossier SharePoint</button>
+    </div>
+
+    <div class="sess-zone">
+      <div class="sz-lbl">Session</div>
+      <div class="sz-val" id="sb-sess">—</div>
+    </div>
+
+    <div id="stag-list"></div>
+
+    <div class="sb-footer">
+      <button class="sb-btn" onclick="syncAllToSP()" style="background:rgba(0,120,212,.25);border-color:rgba(0,120,212,.5);color:white;">☁ Envoyer tous les livrets → SharePoint</button>
+      <button class="sb-btn imp" onclick="importFile()">📥 Importer depuis SharePoint (.json)</button>
+      <button class="sb-btn" onclick="exportAll()">📦 Tout exporter (.json)</button>
+      <button class="sb-btn" onclick="openSession()">✏ Modifier session / stagiaires</button>
+      <button class="sb-btn" onclick="window.print()" id="btn-print" disabled>🖨 Imprimer le livret</button>
+      <button class="sb-btn" onclick="openChangePwd()" style="border-color:rgba(192,57,43,.4);color:rgba(255,150,140,.8);">🔐 Changer le mot de passe</button>
+      <button class="sb-btn" onclick="logout()" style="border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.35);">🔒 Se déconnecter</button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ═════════════════════════════════════ -->
+  <div id="main">
+    <div id="scroll">
+      <div id="lscale">
+        <div id="wrap">
+          <div id="welcome">
+            <div class="wi">🚒</div>
+            <h2>Hub Formateurs — COD 2 PL</h2>
+            <p>Fonctionne sur ordinateur, tablette et téléphone.<br>Les données sont sauvegardées automatiquement dans ce navigateur.</p>
+            <div class="setup-card">
+              <h3>⚡ Comment ça marche</h3>
+              <div class="setup-step"><div class="sn">1</div><span>Cliquez sur un stagiaire dans la liste à gauche (ou appuyez sur ☰ sur mobile).</span></div>
+              <div class="setup-step"><div class="sn">2</div><span>Remplissez le livret. <strong>Sauvegarde automatique</strong> dans ce navigateur après chaque modification.</span></div>
+              <div class="setup-step"><div class="sn">3</div><span>Bouton <strong>☁ SP</strong> (topbar) → le livret est envoyé dans le <strong>dossier SharePoint COD 2</strong>. Connexion SDIS 38 automatique.</span></div>
+              <div class="setup-step"><div class="sn">4</div><span>Depuis un autre appareil : <strong>Importer depuis SharePoint</strong> → sélectionner le fichier .json du stagiaire.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL SESSION ══════════════════════════════ -->
+<div class="mo" id="mo-sess">
+  <div class="mb" style="width:560px;">
+    <h3>✏ Session & Stagiaires</h3>
+    <label>Nom de la session :</label>
+    <input type="text" id="sess-name" placeholder="12-16 octobre 2026">
+    <label>Liste des stagiaires (un par ligne) :</label>
+    <textarea id="sess-stags" rows="12" style="font-size:14px;line-height:1.8;"></textarea>
+    <div class="mac">
+      <button class="bm c" onclick="closeM('mo-sess')">Annuler</button>
+      <button class="bm p" onclick="saveSession()">✅ Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import file input (hidden) -->
+<input type="file" id="file-import" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   HUB COD 2 PL — SDIS 38 / GFOR
+   Compatible : iPhone, iPad, Android, PC
+   Stockage : IndexedDB (local, tous navigateurs)
+   Partage : Web Share API (mobile) + téléchargement
+   ══════════════════════════════════════════════════ */
+
+/* ── SESSION ──────────────────────────────────── */
+let SESSION = JSON.parse(localStorage.getItem('cod2_session')||'null') || {
+  name:'12-16 octobre 2026',
+  stagiaires:['AUBEPART','BEN-FRAJ','BOCACCIO','CHEVALLET','CLAPPIER',
+               'MENON','RICHARD','ROLLAND','SAVIGNON','SERPOLLET','TROY','VIGNE-MASSOT']
+};
+let currentStag = null;
+let stateCache  = {};
+let dirty       = false;
+let saveTimer   = null;
+let UID         = 0;
+
+/* ── MOT DE PASSE ─────────────────────────────── */
+// Hash SHA-256 par défaut = 'COD2-SDIS38'
+const DEFAULT_HASH = 'fb54d17f1a353970964121aee0129963f6770de2addb016e1d90de45962a831f';
+const AUTH_DURATION = 8 * 60 * 60 * 1000; // 8 heures
+
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function getStoredHash(){ return localStorage.getItem('cod2_pwd_hash')||DEFAULT_HASH; }
+
+function isAuthenticated(){
+  const ts=parseInt(localStorage.getItem('cod2_auth_ts')||'0');
+  return Date.now()-ts<AUTH_DURATION;
+}
+function setAuthenticated(){
+  localStorage.setItem('cod2_auth_ts',Date.now().toString());
+}
+function logout(){
+  if(!confirm('Se déconnecter ? Vous devrez saisir le mot de passe à la prochaine ouverture.')) return;
+  localStorage.removeItem('cod2_auth_ts');
+  location.reload();
+}
+
+function showLoginScreen(){ document.getElementById('login-screen').classList.remove('hidden'); }
+function hideLoginScreen(){ document.getElementById('login-screen').classList.add('hidden'); }
+
+function togglePwdVis(){
+  const inp=document.getElementById('pwd-input');
+  inp.type=inp.type==='password'?'text':'password';
+}
+function toggleVis(id){
+  const inp=document.getElementById(id);
+  inp.type=inp.type==='password'?'text':'password';
+}
+
+async function checkPwd(){
+  const val=document.getElementById('pwd-input').value;
+  const errEl=document.getElementById('pwd-error');
+  if(!val){ errEl.textContent='⚠ Saisissez le mot de passe.'; return; }
+  const h=await sha256(val);
+  if(h===getStoredHash()){
+    setAuthenticated();
+    hideLoginScreen();
+    document.getElementById('pwd-input').value='';
+    errEl.textContent='';
+    toast('✅ Connexion réussie — Bienvenue','ok');
+  } else {
+    const inp=document.getElementById('pwd-input');
+    inp.classList.add('err');
+    errEl.textContent='⛔ Mot de passe incorrect';
+    inp.value='';
+    setTimeout(()=>{ inp.classList.remove('err'); },400);
+  }
+}
+
+function openChangePwd(){
+  closeSidebar();
+  ['pwd-current','pwd-new1','pwd-new2'].forEach(id=>{ document.getElementById(id).value=''; document.getElementById(id).type='password'; });
+  document.getElementById('pwd-change-err').textContent='';
+  document.getElementById('mo-pwd').classList.add('open');
+}
+
+async function changePwd(){
+  const cur=document.getElementById('pwd-current').value;
+  const n1=document.getElementById('pwd-new1').value;
+  const n2=document.getElementById('pwd-new2').value;
+  const errEl=document.getElementById('pwd-change-err');
+  errEl.textContent='';
+  if(!cur||!n1||!n2){ errEl.textContent='⚠ Tous les champs sont obligatoires.'; return; }
+  if(n1!==n2){ errEl.textContent='⚠ Les nouveaux mots de passe ne correspondent pas.'; return; }
+  if(n1.length<4){ errEl.textContent='⚠ Le mot de passe doit contenir au moins 4 caractères.'; return; }
+  const hCur=await sha256(cur);
+  if(hCur!==getStoredHash()){ errEl.textContent='⛔ Mot de passe actuel incorrect.'; return; }
+  const hNew=await sha256(n1);
+  localStorage.setItem('cod2_pwd_hash',hNew);
+  setAuthenticated();
+  closeM('mo-pwd');
+  toast('✅ Mot de passe mis à jour avec succès','ok');
+}
+
+/* ── INDEXEDDB ────────────────────────────────── */
+const DB_NAME = 'cod2hub_v4';
+let db = null;
+
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded = e => e.target.result.createObjectStore('livrets',{keyPath:'nom'});
+    r.onsuccess = e => { db=e.target.result; res(db); };
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbSave(nom,state){
+  if(!db) return;
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('livrets','readwrite');
+    tx.objectStore('livrets').put({nom,...state});
+    tx.oncomplete=res; tx.onerror=()=>rej(tx.error);
+  });
+}
+async function idbLoad(nom){
+  if(!db) return null;
+  return new Promise(res=>{
+    const tx=db.transaction('livrets','readonly');
+    const r=tx.objectStore('livrets').get(nom);
+    r.onsuccess=()=>res(r.result||null);
+    r.onerror=()=>res(null);
+  });
+}
+async function idbLoadAll(){
+  if(!db) return [];
+  return new Promise(res=>{
+    const tx=db.transaction('livrets','readonly');
+    const r=tx.objectStore('livrets').getAll();
+    r.onsuccess=()=>res(r.result||[]);
+    r.onerror=()=>res([]);
+  });
+}
+async function initDB(){
+  try{
+    await openDB();
+    const all=await idbLoadAll();
+    all.forEach(s=>{ stateCache[s.nom]=s; });
+    updateStorageStatus(all.length);
+    renderSidebar();
+  }catch(e){
+    document.getElementById('storage-status').textContent='⚠ Erreur stockage : '+e.message;
+  }
+}
+function updateStorageStatus(n){
+  const el=document.getElementById('storage-status');
+  el.className='sb-storage-val ok';
+  el.textContent='✅ '+(n>0?n+' livret(s) en mémoire':'Prêt à saisir');
+}
+
+/* ── ÉTAT CAPTURE / APPLY ─────────────────────── */
+function captureState(){
+  const c=document.getElementById('wrap');
+  if(!c||!c.querySelector('.page')) return null;
+  return {
+    v:5, savedAt:new Date().toISOString(), stagiaire:currentStag,
+    inputs:    [...c.querySelectorAll('input[type=text]')].map(e=>e.value),
+    textareas: [...c.querySelectorAll('textarea')].map(e=>e.value),
+    smileys:   [...c.querySelectorAll('.sm')].map(e=>e.className),
+    mCks:      [...c.querySelectorAll('.mck')].map(e=>e.classList.contains('ck')),
+    nrTags:    [...c.querySelectorAll('.nrt')].map(e=>e.classList.contains('nra')),
+    jury:      [...c.querySelectorAll('.jo')].map(e=>e.className),
+    veh:       [...c.querySelectorAll('.vb')].map(e=>e.classList.contains('sel')),
+    actCks:    [...c.querySelectorAll('.ack')].map(e=>e.classList.contains('ck')),
+    engCks:    [...c.querySelectorAll('.ei')].map(e=>e.classList.contains('ck')),
+    foadO:     c.querySelector('.fo-o')?.className||'',
+    foadN:     c.querySelector('.fo-n')?.className||'',
+  };
+}
+function applyState(s){
+  if(!s||s.v<5) return;
+  const c=document.getElementById('wrap');
+  if(!c) return;
+  const qi=(sel,arr,fn)=>c.querySelectorAll(sel).forEach((e,i)=>arr&&arr[i]!==undefined&&fn(e,i));
+  qi('input[type=text]',s.inputs,    (e,i)=>e.value=s.inputs[i]);
+  qi('textarea',        s.textareas, (e,i)=>e.value=s.textareas[i]);
+  qi('.sm',             s.smileys,   (e,i)=>e.className=s.smileys[i]);
+  qi('.mck',s.mCks,   (e,i)=>{e.classList.toggle('ck',s.mCks[i]);if(!e.textContent.includes('NR'))e.textContent=s.mCks[i]?'✓':'';});
+  qi('.nrt',s.nrTags, (e,i)=>e.classList.toggle('nra',s.nrTags[i]));
+  qi('.jo', s.jury,   (e,i)=>e.className=s.jury[i]);
+  qi('.vb', s.veh,    (e,i)=>e.classList.toggle('sel',s.veh[i]));
+  qi('.ack',s.actCks, (e,i)=>{e.classList.toggle('ck',s.actCks[i]);e.textContent=s.actCks[i]?'✓':'';});
+  qi('.ei', s.engCks, (e,i)=>e.classList.toggle('ck',s.engCks[i]));
+  const fo=c.querySelector('.fo-o'); if(fo&&s.foadO)fo.className=s.foadO;
+  const fn=c.querySelector('.fo-n'); if(fn&&s.foadN)fn.className=s.foadN;
+}
+
+/* ── STATUT SIDEBAR ───────────────────────────── */
+function getStatus(state){
+  if(!state) return 'vide';
+  if(state.jury){
+    if(state.jury.some(c=>/ sv/.test(c))) return 'valide';
+    if(state.jury.some(c=>/ sa1| sa2/.test(c))) return 'ajourne';
+    if(state.jury.some(c=>/ snv/.test(c))) return 'nonvalide';
+  }
+  const ok=(state.inputs&&state.inputs.some(v=>v))||(state.smileys&&state.smileys.some(s=>s!=='sm'))||(state.textareas&&state.textareas.some(v=>v));
+  return ok?'en_cours':'vide';
+}
+
+/* ── SIDEBAR ──────────────────────────────────── */
+function renderSidebar(){
+  document.getElementById('sb-sess').textContent=SESSION.name;
+  const list=document.getElementById('stag-list');
+  list.innerHTML='';
+  SESSION.stagiaires.forEach(nom=>{
+    const s=stateCache[nom];
+    const status=getStatus(s);
+    const time=s?.savedAt?fmtH(s.savedAt):'';
+    const li=document.createElement('div');
+    li.className='si'+(nom===currentStag?' active':'');
+    li.onclick=()=>{selectStag(nom);closeSidebar();};
+    li.innerHTML=`<div class="sdot ${status}"></div><div class="si-name">${nom}</div><div class="si-time">${time}</div>`;
+    list.appendChild(li);
+  });
+}
+
+/* ── HAMBURGER ────────────────────────────────── */
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('overlay');
+  const bb=document.getElementById('burger-btn');
+  const isOpen=sb.classList.toggle('open');
+  ov.classList.toggle('show',isOpen);
+  bb.classList.toggle('open',isOpen);
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('burger-btn').classList.remove('open');
+}
+
+/* ── NAVIGATION ───────────────────────────────── */
+async function selectStag(nom){
+  if(nom===currentStag) return;
+  if(dirty&&currentStag){clearTimeout(saveTimer);await doSave();}
+  currentStag=nom; dirty=false;
+  renderSidebar();
+  document.getElementById('tb-name').textContent='Livret — '+nom;
+  document.getElementById('btn-save').disabled=false;
+  document.getElementById('btn-share').disabled=false;
+  document.getElementById('btn-sp').disabled=false;
+  document.getElementById('btn-print').disabled=false;
+  showBadge('loading','⏳ Chargement…');
+  UID=0;
+  buildLivret(nom);
+  scalePages();
+  const state=await idbLoad(nom);
+  if(state){
+    stateCache[nom]=state;
+    applyState(state);
+    showBadge('saved','💾 Chargé — '+fmtH(state.savedAt));
+  } else {
+    prefillNom(nom);
+    showBadge('new','✦ Nouveau livret');
+  }
+  setupChangeDet();
+}
+function prefillNom(nom){
+  const c=document.getElementById('wrap');
+  const ins=c.querySelectorAll('input[type=text]');
+  if(ins[1]) ins[1].value=nom;
+  if(ins[5]) ins[5].value=SESSION.name;
+}
+
+/* ── AUTO-SAVE ────────────────────────────────── */
+function setupChangeDet(){
+  const c=document.getElementById('wrap');
+  c.removeEventListener('input',onChg,true);
+  c.removeEventListener('click',onChg,true);
+  c.addEventListener('input',onChg,true);
+  c.addEventListener('click',onChg,true);
+}
+const TARGETS='.sm,.onb,.jo,.vb,.ack,.mck,.nrt,.ei';
+function onChg(e){
+  if(e.type==='click'&&!e.target.matches(TARGETS)) return;
+  markDirty();
+}
+function markDirty(){
+  dirty=true;
+  showBadge('pending','⏳ Non sauvegardé…');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(doSave,2500);
+}
+async function doSave(){
+  if(!currentStag||!dirty) return;
+  showBadge('saving','☁ Sauvegarde…');
+  try{
+    const state=captureState();
+    if(!state) return;
+    // 1. Toujours sauvegarder dans IndexedDB (local)
+    await idbSave(currentStag,state);
+    stateCache[currentStag]=state;
+    dirty=false;
+    showBadge('saved','💾 Sauvegardé — '+fmtH(state.savedAt));
+    renderSidebar();
+    updateStorageStatus(SESSION.stagiaires.filter(n=>stateCache[n]).length);
+  }catch(err){
+    showBadge('error','❌ '+err.message.substring(0,45));
+  }
+}
+async function forceSave(){clearTimeout(saveTimer);await doSave();}
+
+/* ── EXPORT / SHARE ───────────────────────────── */
+async function shareStag(){
+  if(!currentStag) return;
+  let state=captureState()||stateCache[currentStag];
+  if(!state){toast('Aucune donnée pour '+currentStag,'err');return;}
+  const json=JSON.stringify(state,null,2);
+  const fname='COD2_'+currentStag+'_'+SESSION.name.replace(/[^a-z0-9]/gi,'_')+'.json';
+
+  // Web Share API (mobile) — partage vers OneDrive, Fichiers, etc.
+  if(navigator.share){
+    try{
+      const file=new File([json],fname,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'Livret COD2 '+currentStag,text:'Livret d\'évaluation COD 2 PL — '+currentStag});
+        toast('✅ Partagé !','ok');
+        return;
+      }
+    }catch(e){if(e.name==='AbortError')return;}
+  }
+  // Fallback : téléchargement
+  dlJSON(json,fname);
+  toast('📥 Fichier téléchargé : '+fname,'ok');
+}
+
+async function exportAll(){
+  const all={session:SESSION,exported:new Date().toISOString(),livrets:{}};
+  SESSION.stagiaires.forEach(nom=>{if(stateCache[nom])all.livrets[nom]=stateCache[nom];});
+  const count=Object.keys(all.livrets).length;
+  if(!count){toast('Aucun livret à exporter','err');return;}
+  const fname='COD2_session_'+SESSION.name.replace(/[^a-z0-9]/gi,'_')+'.json';
+  const json=JSON.stringify(all,null,2);
+  if(navigator.share){
+    try{
+      const file=new File([json],fname,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'Session COD2 '+SESSION.name});
+        toast('✅ Session partagée ('+count+' livrets)','ok');
+        return;
+      }
+    }catch(e){if(e.name==='AbortError')return;}
+  }
+  dlJSON(json,fname);
+  toast('📦 Export complet : '+count+' livret(s)','ok');
+}
+
+function dlJSON(json,fname){
+  const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+  const a=document.createElement('a');
+  a.href=url;a.download=fname;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+/* ── IMPORT ───────────────────────────────────── */
+function importFile(){document.getElementById('file-import').click();}
+async function handleImport(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  e.target.value='';
+  try{
+    const data=JSON.parse(await file.text());
+    // Format session complète
+    if(data.livrets&&data.session){
+      let n=0;
+      for(const [nom,state] of Object.entries(data.livrets)){
+        state.nom=nom; await idbSave(nom,state); stateCache[nom]=state; n++;
+      }
+      renderSidebar();
+      toast('✅ '+n+' livret(s) importé(s) depuis la session','ok');
+      return;
+    }
+    // Format livret individuel
+    if(data.v&&data.stagiaire){
+      const nom=data.stagiaire;
+      data.nom=nom; await idbSave(nom,data); stateCache[nom]=data;
+      if(nom===currentStag) applyState(data);
+      renderSidebar();
+      toast('✅ Livret de '+nom+' importé','ok');
+      return;
+    }
+    toast('⚠ Format de fichier non reconnu','err');
+  }catch(err){toast('❌ Erreur : '+err.message,'err');}
+}
+
+/* ── SESSION MODAL ────────────────────────────── */
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function openSession(){
+  document.getElementById('sess-name').value=SESSION.name;
+  document.getElementById('sess-stags').value=SESSION.stagiaires.join('\n');
+  document.getElementById('mo-sess').classList.add('open');
+}
+function saveSession(){
+  const name=document.getElementById('sess-name').value.trim()||SESSION.name;
+  const stags=document.getElementById('sess-stags').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!stags.length){alert('Ajoutez au moins un stagiaire.');return;}
+  SESSION={name,stagiaires:stags};
+  localStorage.setItem('cod2_session',JSON.stringify(SESSION));
+  stateCache={}; currentStag=null;
+  buildWelcome();
+  document.getElementById('tb-name').textContent='Hub Formateurs — COD 2 PL';
+  document.getElementById('btn-save').disabled=true;
+  document.getElementById('btn-share').disabled=true;
+  document.getElementById('btn-print').disabled=true;
+  document.getElementById('save-badge').className='tb-badge';
+  renderSidebar();
+  closeM('mo-sess');
+  toast('✅ Session mise à jour — '+stags.length+' stagiaires','ok');
+}
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+/* ── SCALER ───────────────────────────────────── */
+const PAGE_W=814;
+function scalePages(){
+  const scroller=document.getElementById('scroll');
+  const scaler=document.getElementById('lscale');
+  const avail=scroller.clientWidth-24;
+  if(avail<PAGE_W){
+    scaler.style.zoom=(avail/PAGE_W).toFixed(3);
+  } else {
+    scaler.style.zoom='';
+  }
+}
+window.addEventListener('resize',scalePages);
+window.addEventListener('orientationchange',()=>setTimeout(scalePages,300));
+
+/* ── UTILS ────────────────────────────────────── */
+function showBadge(type,msg){
+  const b=document.getElementById('save-badge');
+  b.className='tb-badge '+type; b.textContent=msg;
+}
+function fmtH(iso){
+  try{return new Date(iso).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}catch{return '';}
+}
+function toast(msg,type='info'){
+  const t=document.getElementById('toast');
+  const c={ok:'background:#107C10;color:white',err:'background:#C0392B;color:white',info:'background:#1A5276;color:white'};
+  t.style.cssText+=(c[type]||c.info);
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+function buildWelcome(){
+  const wrap=document.getElementById('wrap');
+  wrap.innerHTML=`<div id="welcome"><div class="wi">🚒</div><h2>Hub Formateurs — COD 2 PL</h2><p>Sélectionnez un stagiaire dans la liste.</p></div>`;
+  document.getElementById('lscale').style.zoom='';
+}
+
+/* ── DONNÉES COMPÉTENCES ──────────────────────── */
+const SM=['😢','😟','🙂','😊'];
+const C1=[{c:"Prendre en compte un véhicule tout terrain en analysant les conditions de sécurité",e:["Prise en compte du véhicule","Vérification avant départ","Installation au poste de conduite","Sécurité cabine","Localisation des témoins et commandes"],n:1}];
+const C2=[{c:"Anticiper, repérer, évaluer et analyser les différents éléments du terrain pour prendre la décision de s'engager",e:["STOPD","Maîtrise du gabarit","Décider d'une trajectoire et la respecter","Identification des situations dangereuses"],n:2}];
+const C3=[{c:"Conduire un véhicule tout terrain dans des situations de terrain peu accidenté et/ou non aménagé",e:["Position des mains, maintien du volant","Point effet","Rapport adapté","Régime moteur adapté","Utilisation du ralentisseur et des freins","Aisance, confiance en soi, maîtrise du véhicule"],n:3}];
+const C3V=[{c:"Conduire un véhicule tout terrain dans des situations de terrain peu accidenté et/ou non aménagé",e:["Position des mains, maintien du volant","Point effet","Rapport adapté","Régime moteur adapté","Utilisation des freins","Aisance, confiance en soi, maîtrise du véhicule"],n:3}];
+const C4=[{c:"Mise en œuvre des dispositifs TT de manière adaptée pour assurer la sécurité des personnels et du véhicule",e:["Utilisation des dispositifs TT","Interprétation des témoins des dispositifs TT","Connaissance des contraintes dispositifs TT"],n:4}];
+const C5=[{c:"Mettre en œuvre un CCF dans le cadre des manœuvres de lutte contre les feux de végétaux et d'espaces naturels",e:["Maîtrise et exécution des manœuvres","Sécurité collective","Rendre compte"],n:5}];
+const CNUIT=[{c:"Appréhender les difficultés liées à l'évolution d'un véhicule TT en conditions nocturnes",e:["Identification des situations dangereuses","Respect des consignes lors des phases de guidage","Utilisation adaptée des dispositifs d'éclairage"],n:3}];
+const C2C=[{c:"Conduire un véhicule tout terrain de manière adaptée sur des structures routières praticables en toute sécurité",e:["Respect du code de la route","Vitesse adaptée","Compréhension du comportement du véhicule","Maîtrise du gabarit","Aisance, confiance en soi, maîtrise du véhicule"],n:2}];
+const ACT=[["Recos.","Marche"],["Pente 40%","Gué"],["Pente 50%","Fossé"],["Pente 100%","Cassis"],["Dévers <30%","Crois. ponts"],["Dévers 30%","Refus obst."]];
+const PAGES=[
+  {t:"Conduite CCF Terrain",d:"Mardi Matin",nb:"5",c:[...C1,...C2,...C3,...C4,...C5],at:"Évaluation pentes & dévers",v:["RVI 220","RVI 240","Merc.1250","Merc.U5000"],act:true,rs:false},
+  {t:"Conduite CCF Terrain",d:"Mardi Après-midi",nb:"6",c:[...C1,...C2,...C3,...C4],at:"Guidage",v:["RVI 220","RVI 240","Merc.1250","Merc.U5000"],act:true,rs:true},
+  {t:"Conduite CCF Terrain",d:"Mercredi Matin",nb:"7",c:[...C1,...C2,...C3,...C4,...C5],at:"Auto-dégagement",v:["RVI 220","RVI 240","Merc.1250","Merc.U5000"],act:true,rs:false},
+  {t:"Conduite CCF Terrain",d:"Mercredi Après-midi",nb:"8",c:[...C1,...C2,...C3,...C4],at:null,v:["RVI 220","RVI 240","Merc.1250","Merc.U5000"],act:true,rs:true},
+  {t:"Conduite de Nuit",d:"Mercredi Soir",nb:"9",c:[...C3,...C4,...CNUIT],at:null,v:["RVI 220","RVI 240","Merc.1250","Merc.U5000"],act:false,rs:true},
+  {t:"Conduite CCF Terrain",d:"Jeudi / Vendredi Matin",nb:"10",c:[...C1,...C2,...C3,...C4,...C5],at:null,v:["RVI 220","RVI 240","Merc.1250","Merc.U5000"],act:true,rs:true},
+  {t:"Conduite VLTT Terrain",d:"Jeudi / Vendredi Matin",nb:"11",c:[...C1,...C2,...C3V,...C4,...C5],at:null,v:["Defender 90","Defender 110","Defender 130"],act:true,rs:true},
+  {t:"Conduite CCF Circuit",d:"Jeudi / Vendredi Matin",nb:"12",c:[...C1,...C2C,...C2,...C3,...C4,...C5],at:null,v:["RVI 220","RVI 240","Merc.1250","Merc.U5000"],act:false,rs:false},
+];
+
+/* ── BUILDERS ─────────────────────────────────── */
+function mkTh(el){if(!el)return;el.innerHTML=`<tr><th class="dk" rowspan="2" style="width:25%;text-align:left;padding-left:3px;">Compétence</th><th class="dk" rowspan="2" style="width:28%;">Éléments</th><th class="dk" rowspan="2" style="width:20px;">NR</th><th class="csh" colspan="4" style="font-size:11px;">🧑 Stagiaire</th><th class="sp" rowspan="2"></th><th class="cfh" colspan="4" style="font-size:11px;">👨‍🏫 Formateur</th><th class="dk" rowspan="2" style="width:16px;">#</th></tr><tr><th class="css">😢</th><th class="css">😟</th><th class="css">🙂</th><th class="css">😊</th><th class="cfs">😢</th><th class="cfs">😟</th><th class="cfs">🙂</th><th class="cfs">😊</th></tr>`;}
+function mkThAt(el){if(!el)return;el.innerHTML=`<tr><th class="dk" rowspan="2" style="width:20px;">#</th><th class="dk" rowspan="2" style="text-align:left;padding-left:3px;">Atelier</th><th class="csh" colspan="4" style="font-size:11px;">🧑 Stagiaire</th><th class="sp" rowspan="2"></th><th class="cfh" colspan="4" style="font-size:11px;">👨‍🏫 Formateur</th></tr><tr><th class="css">😢</th><th class="css">😟</th><th class="css">🙂</th><th class="css">😊</th><th class="cfs">😢</th><th class="cfs">😟</th><th class="cfs">🙂</th><th class="cfs">😊</th></tr>`;}
+function smC(){const id=++UID;return SM.map((_,j)=>`<td class="sc bgS"><span class="sm" data-uid="s${id}" data-val="${j+1}" data-role="s" onclick="selS(this)">${SM[j]}</span></td>`).join('')+'<td class="spc"></td>'+SM.map((_,j)=>`<td class="sc bgF"><span class="sm" data-uid="f${id}" data-val="${j+1}" data-role="f" onclick="selS(this)">${SM[j]}</span></td>`).join('');}
+function bComp(comps,tb){comps.forEach(comp=>{comp.e.forEach((el,i)=>{const tr=document.createElement('tr');let h='';if(i===0)h+=`<td class="cm" rowspan="${comp.e.length}">${comp.c}</td>`;h+=`<td class="ce">${el}</td><td class="nr"><span class="nrt" onclick="this.classList.toggle('nra')">NR</span></td>${smC()}`;if(i===0)h+=`<td class="nc" rowspan="${comp.e.length}">${comp.n}</td>`;tr.innerHTML=h;tb.appendChild(tr);});});}
+function bAtel(items,tb){items.forEach(([l,lbl])=>{const tr=document.createElement('tr');tr.innerHTML=`<td class="nc" style="font-size:12px;">${l}</td><td class="ce">${lbl}</td>${smC()}`;tb.appendChild(tr);});}
+function bActiv(c){const g=document.createElement('div');g.className='ag';ACT.forEach(p=>p.forEach(n=>{const d=document.createElement('div');d.className='ai';d.innerHTML=`<div class="ack" onclick="this.classList.toggle('ck');this.textContent=this.classList.contains('ck')?'✓':''"></div><span>${n}</span>`;g.appendChild(d);}));const note=document.createElement('div');note.style.cssText='font-size:9px;color:var(--gm);font-style:italic;margin-top:3px;';note.textContent='Dénombrer les activités réalisées';c.appendChild(g);c.appendChild(note);}
+function ld(){return`<div class="ld"><span class="lb st">🧑 Stagiaire</span><span class="lb fo">👨‍🏫 Formateur</span><span style="margin-left:auto;font-size:9px;">NR = Non Réalisé</span></div>`;}
+function vbs(v){return v.map(x=>`<button class="vb" onclick="this.closest('.ah').querySelectorAll('.vb').forEach(b=>b.classList.remove('sel'));this.classList.add('sel')">${x}</button>`).join('');}
+
+function buildLivret(nom){
+  UID=0;
+  const wrap=document.getElementById('wrap');
+  wrap.innerHTML='';
+
+  // PAGE 1
+  const p1=document.createElement('div');p1.className='page';
+  p1.innerHTML=`
+  <div class="ph"><div class="logo-c">SDIS<br>38</div><h1 style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--gf);letter-spacing:1px;text-transform:uppercase;flex:1;">Livret d'Évaluation</h1><div class="cod-b">COD<br>2PL</div></div>
+  <div class="tc">
+    <div class="box"><div class="bxl">Identité</div><div class="bxc">
+      <div class="fr"><label>Prénom :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Nom :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Matricule :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Affectation :</label><input type="text" placeholder="…"></div>
+    </div></div>
+    <div class="box"><div class="bxl">Stage</div><div class="bxc">
+      <div class="fr"><label>N° du stage :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Dates :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Resp. péda. :</label><input type="text" placeholder="…"></div>
+    </div></div>
+  </div>
+  <div class="sbd"><div class="bl">Pratique</div><div class="bc">
+    <table class="eg"><thead><tr>
+      <th rowspan="2" style="background:var(--gf);text-align:left;padding-left:4px;width:44%;">Compétence</th>
+      <th class="csh" colspan="4">🧑 Stagiaire</th><th class="cfh" colspan="4">👨‍🏫 Formateur</th>
+    </tr><tr>
+      <th class="css">😢</th><th class="css">😟</th><th class="css">🙂</th><th class="css">😊</th>
+      <th class="cfs">😢</th><th class="cfs">😟</th><th class="cfs">🙂</th><th class="cfs">😊</th>
+    </tr></thead><tbody id="stb"></tbody></table>
+  </div></div>
+  <div class="sbd"><div class="bl">Théorie</div><div class="bc">
+    <div class="tr"><label>FOAD réalisée :</label>
+      <span class="onb fo-o" onclick="this.className='onb fo-o aO';this.closest('.bc').querySelector('.fo-n').className='onb fo-n'">O</span>
+      <span class="onb fo-n" onclick="this.className='onb fo-n aN';this.closest('.bc').querySelector('.fo-o').className='onb fo-o'">N</span>
+    </div>
+    <hr class="sep">
+    <div class="tr"><div style="flex:1;"><label>QCM lundi :</label><div class="sn2">(non pris en compte)</div></div><input type="text" class="ni" placeholder="/20"></div>
+    <div class="tr"><div style="flex:1;"><label>QCM vendredi :</label><div class="sn2">(éliminatoire si < 12)</div></div><input type="text" class="ni" placeholder="/20"></div>
+  </div></div>
+  <div class="sbd"><div class="bl">Jury</div><div class="bc" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+    <div class="jo" onclick="jsel(this,'sv')"><strong>✅ VALIDÉ(E)</strong></div>
+    <div class="jo" onclick="jsel(this,'sa1')"><div><strong>⚠️ AJOURNÉ(E)</strong><small>+ demi-journée COD 3</small></div></div>
+    <div class="jo" onclick="jsel(this,'sa2')"><div><strong>⚠️ AJOURNÉ(E)</strong><small>+ nouveau stage</small></div></div>
+    <div class="jo" onclick="jsel(this,'snv')"><div><strong>❌ NON VALIDÉ(E)</strong><small>ne peut pas se représenter</small></div></div>
+  </div></div>
+  <div class="sbd"><div class="bl">Visas</div><div class="bc"><div class="vr">
+    <div class="vc"><div class="vt">Resp. pédagogique</div><div class="vs"></div></div>
+    <div class="vc"><div class="vt">Président du jury</div><div class="vs"></div></div>
+    <div class="vc"><div class="vt">Apprenant</div><div class="vs"></div></div>
+  </div></div></div>
+  <div class="pmaj">MAJ : 04/2023</div><div class="pnb">— 1 —</div>`;
+  wrap.appendChild(p1);
+  const stb=p1.querySelector('#stb');
+  ['Prise en compte d\'un véhicule TT','Conduite d\'un véhicule TT sur route','Analyse, évaluation du terrain','Conduite sur terrain non aménagé','Mise en œuvre des dispositifs TT'].forEach(l=>{
+    const id=++UID;const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="comp" style="padding-left:4px;">${l}</td>`+SM.map((_,j)=>`<td class="csd"><span class="sm" data-uid="s${id}" data-val="${j+1}" data-role="s" onclick="selS(this)">${SM[j]}</span></td>`).join('')+SM.map((_,j)=>`<td class="cfd"><span class="sm" data-uid="f${id}" data-val="${j+1}" data-role="f" onclick="selS(this)">${SM[j]}</span></td>`).join('');
+    stb.appendChild(tr);
+  });
+
+  // PAGE 3 — DÉCOUVERTE
+  const p3=document.createElement('div');p3.className='page';
+  p3.innerHTML=`
+  <div class="ptb"><div class="lsm">SDIS<br>38</div>Activités Découverte<span class="sd">Lundi</span></div>
+  <p style="font-size:9px;color:var(--gm);font-style:italic;margin-bottom:5px;">À l'issue de la première journée, l'apprenant évalue à l'aide des smileys son ressenti pour chaque séquence.</p>
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--rouge);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;border-bottom:1px solid var(--rouge);padding-bottom:2px;">Lundi Matin</div>
+  <div style="display:flex;align-items:center;gap:7px;padding:4px 7px;background:var(--gbg);border-radius:3px;margin-bottom:5px;min-height:44px;">
+    <span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;background:var(--gf);color:white;padding:2px 6px;border-radius:2px;">JU.</span>
+    <span style="font-size:10px;flex:1;">Rappel sur les aspects juridiques entourant la conduite spécifique aux sapeurs-pompiers</span>
+    <div class="mck" onclick="this.classList.toggle('ck');this.textContent=this.classList.contains('ck')?'✓':''"></div>
+    <span style="font-size:10px;font-weight:700;color:var(--vert);">VU</span>
+  </div>
+  <div class="ah"><span class="at">Prise en compte</span><span style="font-size:9px;color:var(--gm);">Véhicule :</span>${vbs(["RVI 220","RVI 240","Merc.1250","Merc.U5000"])}</div>
+  <table class="edt"><thead id="thd1"></thead><tbody id="tbd1"></tbody></table>${ld()}
+  <div class="ah" style="margin-top:5px;"><span class="at">Conduite Découverte</span><span style="font-size:9px;color:var(--gm);">Véhicule :</span>${vbs(["RVI 220","RVI 240","Merc.1250","Merc.U5000"])}</div>
+  <table class="edt"><thead id="thd2"></thead><tbody id="tbd2"></tbody></table>${ld()}
+  <hr class="sep">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--rouge);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;border-bottom:1px solid var(--rouge);padding-bottom:2px;margin-top:6px;">Lundi Après-midi — Ateliers</div>
+  <table class="edt"><thead id="that"></thead><tbody id="tbat"></tbody></table>${ld()}
+  <div class="rb"><div class="rt">Ressenti Stagiaire — Lundi</div><textarea class="rest" placeholder="Ressenti de la journée…" rows="2"></textarea></div>
+  <div class="pmaj">MAJ : 04/2023</div><div class="pnb">— 4 —</div>`;
+  wrap.appendChild(p3);
+  mkTh(p3.querySelector('#thd1')); bComp(C1,p3.querySelector('#tbd1'));
+  mkTh(p3.querySelector('#thd2')); bComp([
+    {c:"Conduire un véhicule tout terrain dans des situations de terrain peu accidenté et/ou non aménagé",e:["Conduire en terrain peu accidenté et/ou non aménagé"],n:2},
+    {c:"Anticiper, repérer, évaluer et analyser les différents éléments du terrain pour prendre la décision de s'engager",e:["Anticiper, repérer, évaluer et analyser les éléments du terrain"],n:3},
+    {c:"Mettre en œuvre les dispositifs TT de manière adaptée pour assurer la sécurité du personnel et du véhicule",e:["Mise en œuvre des dispositifs TT pour la sécurité"],n:4},
+  ],p3.querySelector('#tbd2'));
+  mkThAt(p3.querySelector('#that'));
+  bAtel([['A','Chaîne cinématique, châssis, ponts et pneumatiques'],['B','La boîte de transfert (4x4 permanent)'],['C','La boîte de transfert (4x2 / 4x4)'],['D','Différentiels et blocages'],['E','Reconnaissances & STOPD (1ère partie)']],p3.querySelector('#tbat'));
+
+  // PAGES CCF
+  PAGES.forEach((cfg,idx)=>{
+    const pg=document.createElement('div');pg.className='page';
+    pg.innerHTML=`
+    <div class="ptb"><div class="lsm">SDIS<br>38</div>${cfg.t}<span class="sd">${cfg.d}</span></div>
+    <div class="ah"><span class="at">Auto-évaluation</span><span style="font-size:9px;color:var(--gm);">Véhicule :</span>${vbs(cfg.v)}</div>
+    <table class="edt"><thead id="th${idx}"></thead><tbody id="tb${idx}"></tbody></table>${ld()}
+    <div class="apb">
+      <div class="apbx"><div class="abt">Points Forts</div><textarea class="apt" placeholder="…" rows="3"></textarea></div>
+      <div class="apbx"><div class="abt ef">Points d'Effort</div><textarea class="apt" placeholder="…" rows="3"></textarea>
+        <div class="dr"><span>Manœuvre dangereuse :</span><div class="mck" onclick="this.classList.toggle('ck');this.textContent=this.classList.contains('ck')?'✓':''"></div></div>
+      </div>
+    </div>
+    ${(cfg.at||cfg.act)?`<div style="display:${cfg.at?'grid':'block'};grid-template-columns:${cfg.at?'140px 1fr':'1fr'};gap:5px;margin-top:5px;">
+      ${cfg.at?`<div class="atbx"><span class="sub">Atelier</span>${cfg.at}</div>`:''}
+      ${cfg.act?`<div><div style="font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;color:var(--gm);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">Activités</div><div id="ac${idx}"></div></div>`:''}
+    </div>`:''}
+    ${cfg.rs?`<div class="rb" style="margin-top:5px;"><div class="rt">Ressenti Stagiaire</div><textarea class="rest" placeholder="Ressenti de la séquence…" rows="2"></textarea></div>`:''}
+    <div class="pmaj">MAJ : 04/2023</div><div class="pnb">— ${cfg.nb} —</div>`;
+    wrap.appendChild(pg);
+    mkTh(pg.querySelector('#th'+idx)); bComp(cfg.c,pg.querySelector('#tb'+idx));
+    if(cfg.act) bActiv(pg.querySelector('#ac'+idx));
+  });
+
+  // PROCESSUS
+  const pp=document.createElement('div');pp.className='page';
+  pp.innerHTML=`
+  <div class="ptb"><div class="lsm">SDIS<br>38</div>Processus de Professionnalisation</div>
+  <div class="tc">
+    <div class="box"><div class="bxl">Identité</div><div class="bxc">
+      <div class="fr"><label>Prénom :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Nom :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Matricule :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Affectation :</label><input type="text" placeholder="…"></div>
+    </div></div>
+    <div class="box"><div class="bxl">Référent COD 3</div><div class="bxc">
+      <div class="fr"><label>Nom :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Affectation :</label><input type="text" placeholder="…"></div>
+      <div class="fr"><label>Téléphone :</label><input type="text" placeholder="…"></div>
+    </div></div>
+  </div>
+  <div class="sbd" style="margin-bottom:5px;"><div class="bl">Engins</div><div class="bc">
+    <div class="eg2" style="margin-bottom:5px;">
+      <div class="ei" onclick="this.classList.toggle('ck')"><div class="mck" style="pointer-events:none;"></div>RVI 220</div>
+      <div class="ei" onclick="this.classList.toggle('ck')"><div class="mck" style="pointer-events:none;"></div>RVI 240</div>
+      <div class="ei" onclick="this.classList.toggle('ck')"><div class="mck" style="pointer-events:none;"></div>Mercedes 1250</div>
+      <div class="ei" onclick="this.classList.toggle('ck')"><div class="mck" style="pointer-events:none;"></div>Mercedes U 5000</div>
+      <div class="ei" onclick="this.classList.toggle('ck')"><div class="mck" style="pointer-events:none;"></div>CCR</div>
+      <div class="ei" onclick="this.classList.toggle('ck')"><div class="mck" style="pointer-events:none;"></div>CCGC</div>
+    </div>
+    <div style="display:flex;gap:16px;">
+      <div class="fr"><label>Vol. route :</label><input type="text" style="width:55px;" placeholder="…h"></div>
+      <div class="fr"><label>Vol. piste :</label><input type="text" style="width:55px;" placeholder="…h"></div>
+    </div>
+  </div></div>
+  <div class="sbd" style="margin-bottom:5px;"><div class="bl">Calendrier</div><div class="bc">
+    ${['Conduite','Conduite','Conduite','Conduite','Conduite','Validation'].map(l=>`<div class="cr"><label>${l} :</label><input type="text" placeholder="jj/mm/aaaa"></div>`).join('')}
+  </div></div>
+  <div class="sbd" style="margin-bottom:5px;"><div class="bl">Plan d'action</div><div class="bc"><div style="border:1.5px solid var(--bd);border-radius:3px;padding:4px 7px;"><textarea class="pat" placeholder="Axes de progrès, points à travailler…" rows="4"></textarea></div></div></div>
+  <div class="sbd"><div class="bl">Visas</div><div class="bc">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;">
+      <div class="vc"><div class="vt">Resp. Péda.</div><div class="vs"></div></div>
+      <div class="vc"><div class="vt">Président jury</div><div class="vs"></div></div>
+      <div class="vc"><div class="vt">Apprenant</div><div class="vs"></div></div>
+      <div class="vc"><div class="vt">Chef caserne</div><div class="vs"></div></div>
+    </div>
+  </div></div>
+  <div class="pmaj">MAJ : 04/2023</div><div class="pnb">— 2 bis / 2 ter —</div>`;
+  wrap.appendChild(pp);
+}
+
+/* ── INTERACTIONS ─────────────────────────────── */
+function selS(btn){
+  const{uid,val,role}=btn.dataset;
+  document.querySelectorAll(`.sm[data-uid="${uid}"][data-role="${role}"]`).forEach(b=>b.className='sm');
+  btn.classList.add(role==='s'?'s'+val:'f'+val);
+}
+function jsel(el,k){
+  el.closest('.bc').querySelectorAll('.jo').forEach(o=>o.className='jo');
+  el.classList.add(k);
+}
+
+/* ══════════════════════════════════════════════════
+   SHAREPOINT — Lien de partage direct SDIS 38
+   Les formateurs se connectent avec leur compte SDIS 38
+   Dossier : COD 2 / 12-16 octobre 2026
+   ══════════════════════════════════════════════════ */
+
+// Lien du dossier SharePoint COD 2 (partagé au sein du SDIS 38)
+const SP_FOLDER_LINK = 'https://sdis38.sharepoint.com/:f:/s/ConduiteSDIS382/IgBu0-6Onn7mQamPdq12j9phAbZEzqwtYZEK86FqjimA2pQ?e=zf3evm';
+
+// Ouvrir le dossier SharePoint dans un nouvel onglet
+function openSPFolder(){
+  window.open(SP_FOLDER_LINK,'_blank','noopener');
+}
+
+// Envoyer LE livret actuel vers SharePoint
+async function sendToSP(){
+  if(!currentStag){ toast('Sélectionnez un stagiaire d\'abord','err'); return; }
+  // S'assurer que l'état est capturé
+  await forceSave();
+  const state=stateCache[currentStag]||captureState();
+  if(!state){ toast('Aucune donnée à envoyer','err'); return; }
+  const fname='COD2_livret_'+currentStag+'_'+SESSION.name.replace(/[^a-z0-9]/gi,'_')+'.json';
+  const json=JSON.stringify(state,null,2);
+  // Mobile : Web Share API → OneDrive/Fichiers
+  if(navigator.share){
+    try{
+      const file=new File([json],fname,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({
+          files:[file],
+          title:'Livret COD2 — '+currentStag,
+          text:'Livret d\'évaluation COD 2 PL SDIS 38 — '+currentStag+'\nEnregistrez ce fichier dans le dossier SharePoint COD 2.'
+        });
+        toast('✅ Livret partagé — enregistrez-le dans le dossier COD 2','ok');
+        return;
+      }
+    }catch(e){if(e.name==='AbortError')return;}
+  }
+  // Desktop : télécharger + ouvrir le dossier SP
+  dlJSON(json,fname);
+  setTimeout(()=>window.open(SP_FOLDER_LINK,'_blank','noopener'),400);
+  showToast_SP(fname);
+}
+
+// Notification d'instructions pour le desktop
+function showToast_SP(fname){
+  let overlay=document.getElementById('sp-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='sp-overlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML=`
+    <div style="background:white;border-radius:14px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:'Barlow',sans-serif;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#0078D4;margin-bottom:16px;letter-spacing:1px;">☁ Envoi vers SharePoint</div>
+      <div style="font-size:12px;line-height:1.7;color:#333;">
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;"><div style="width:24px;height:24px;background:#0078D4;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;">1</div><span>Le fichier <strong>${fname}</strong> a été téléchargé sur votre appareil.</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;"><div style="width:24px;height:24px;background:#0078D4;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;">2</div><span>Le dossier SharePoint COD 2 vient de s'ouvrir. <strong>Connectez-vous avec votre compte SDIS 38</strong> si demandé.</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:24px;height:24px;background:#0078D4;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;">3</div><span>Cliquez sur <strong>+ Nouveau → Charger des fichiers</strong> et sélectionnez le fichier téléchargé.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button onclick="document.getElementById('sp-overlay').remove()" style="flex:1;background:#E0E0E0;border:none;border-radius:7px;padding:10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;">Fermer</button>
+        <button onclick="window.open(SP_FOLDER_LINK,'_blank','noopener')" style="flex:1;background:#0078D4;color:white;border:none;border-radius:7px;padding:10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;">📂 Rouvrir SharePoint</button>
+      </div>
+    </div>`;
+}
+
+// Envoyer TOUS les livrets vers SharePoint (zip ou séquentiellement)
+async function syncAllToSP(){
+  const stags=SESSION.stagiaires.filter(n=>stateCache[n]);
+  if(!stags.length){ toast('Aucun livret à envoyer','err'); return; }
+  // Créer un fichier ZIP-like (en réalité un export groupé)
+  const all={session:SESSION,exported:new Date().toISOString(),livrets:{}};
+  stags.forEach(n=>all.livrets[n]=stateCache[n]);
+  const fname='COD2_session_'+SESSION.name.replace(/[^a-z0-9]/gi,'_')+'_COMPLET.json';
+  const json=JSON.stringify(all,null,2);
+  if(navigator.share){
+    try{
+      const file=new File([json],fname,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'Session COD2 — '+SESSION.name});
+        toast('✅ Session complète partagée ('+stags.length+' livrets)','ok');
+        return;
+      }
+    }catch(e){if(e.name==='AbortError')return;}
+  }
+  dlJSON(json,fname);
+  setTimeout(()=>window.open(SP_FOLDER_LINK,'_blank','noopener'),400);
+  showToast_SP(fname);
+}
+
+// Fonctions stub pour compatibilité (plus nécessaires sans PKCE)
+function updateSpUI(){}
+function _getTok(){ return null; }
+function spSave(){ return Promise.resolve(false); }
+function spLoad(){ return Promise.resolve(null); }
+function spSyncAllStatuses(){ return Promise.resolve(); }
+function openSpCfg(){
+  toast('Configuration non nécessaire — lien SharePoint intégré','info');
+}
+function saveSpCfg(){}
+
+
+
+/* ── INIT ─────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded',async()=>{
+  // Vérification authentification
+  if(isAuthenticated()){
+    hideLoginScreen();
+    await initDB();
+    const cached=SESSION.stagiaires.filter(n=>stateCache[n]);
+    if(cached.length) toast('✅ '+cached.length+' livret(s) en mémoire','ok');
+  } else {
+    showLoginScreen();
+    setTimeout(()=>initDB(),300);
+    setTimeout(()=>document.getElementById('pwd-input').focus(),100);
+  }
+});
+</script>
+</body>
+</html>
