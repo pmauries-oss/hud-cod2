@@ -513,6 +513,7 @@ html,body{height:100%;overflow:hidden;}body{display:flex;flex-direction:column;}
     <div class="header-sub">Conducteur Tout-Terrain – Poids Lourd — SDIS Isère</div>
   </div>
   <div id="badge_jury" class="badge">—</div>
+  <button class="btn-save-hdr" id="btn_refresh_hdr" onclick="manualRefresh()" title="Actualiser depuis GitHub — récupère les saisies des autres tablettes" style="background:rgba(0,100,180,.7);margin-right:4px;">🔄 Actualiser</button>
   <button class="btn-save-hdr" id="btn_save_hdr" onclick="saveLocal()">💾 Sauvegarder</button>
 </div>
 
@@ -2538,15 +2539,25 @@ async function selectStag(nom) {
   STATE.foad=null; STATE.qcm_lundi=''; STATE.qcm_vendredi=''; STATE.jury=''; STATE.jury_obs='';
   // 3. Naviguer vers onglet 0
   currentStag = nom;
+  dirty = false;
   renderStagList();
   buildAllSessions();
   initSigs();
   setFoad(null);
   goTab(0);
-  // 4. Charger les données
+  // 4. Charger les données — GitHub EN PRIORITÉ (multi-tablettes)
   setSaveBadge('saving','⏳ Chargement…');
-  var data = await hubIdbLoad(nom);
-  if (!data && getGHToken()) data = await ghLoad(nom);
+  var data = null;
+  if (getGHToken()) {
+    // Toujours charger depuis GitHub pour avoir la version la plus récente
+    // (une autre tablette a peut-être sauvegardé entre-temps)
+    data = await ghLoad(nom);
+    if (data) { await hubIdbSave(nom, data); stateCache[nom] = data; }
+  }
+  if (!data) {
+    // Fallback : mémoire locale si pas de GitHub ou pas de données
+    data = await hubIdbLoad(nom);
+  }
   if (data) {
     stateCache[nom] = data;
     loadState(data);
@@ -2556,6 +2567,72 @@ async function selectStag(nom) {
     setSaveBadge('','');
     showToast('✦ Nouveau livret : '+nom, 'ok');
   }
+  // 5. Démarrer la sync automatique pour ce stagiaire
+  startAutoSync();
+}
+
+/* ── SYNC AUTOMATIQUE MULTI-TABLETTES ────────────────
+   Toutes les 30 secondes, vérifie si une autre tablette
+   a sauvegardé une version plus récente sur GitHub.
+   Si oui, et si la tablette actuelle n'est pas en cours
+   de saisie (dirty=false), recharge les données.
+   ──────────────────────────────────────────────────── */
+var autoSyncTimer = null;
+
+function startAutoSync() {
+  clearInterval(autoSyncTimer);
+  if (!getGHToken()) return;
+  autoSyncTimer = setInterval(async function() {
+    if (!currentStag || !getGHToken()) return;
+    try {
+      var ghData = await ghLoad(currentStag);
+      if (!ghData) return;
+      var localTs = (stateCache[currentStag] && stateCache[currentStag]._savedAt) || '';
+      var ghTs    = ghData._savedAt || '';
+      // Si GitHub a une version plus récente ET qu'on n'est pas en train de saisir
+      if (ghTs > localTs && !dirty) {
+        stateCache[currentStag] = ghData;
+        await hubIdbSave(currentStag, ghData);
+        loadState(ghData);
+        setSaveBadge('saved','☁ Mis à jour '+fmtH(ghData._savedAt));
+        showToast('🔄 Livret de '+currentStag+' mis à jour depuis une autre tablette','ok');
+        renderStagList();
+      }
+      // Mettre à jour les statuts de la sidebar (même si on ne recharge pas)
+      await syncSidebarStatuses();
+    } catch(e) {}
+  }, 30000); // Toutes les 30 secondes
+}
+
+function stopAutoSync() {
+  clearInterval(autoSyncTimer);
+  autoSyncTimer = null;
+}
+
+// Mettre à jour les points de couleur dans la sidebar sans recharger les livrets
+async function syncSidebarStatuses() {
+  if (!getGHToken()) return;
+  var sess = HUB_SESSION.name.replace(/[^a-z0-9]/gi,'_');
+  try {
+    var r = await fetch(
+      'https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/sessions/'+sess,
+      {headers:ghHdrs()}
+    );
+    if (!r.ok) return;
+    var files = await r.json();
+    for (var i=0; i<files.length; i++) {
+      var f = files[i];
+      if (!f.name.endsWith('.json')) continue;
+      var nom = f.name.replace('etat_','').replace('.json','');
+      if (nom === currentStag) continue; // Déjà géré par l'auto-sync
+      // Charger pour mettre à jour le cache statuts
+      if (!stateCache[nom] || !stateCache[nom]._savedAt) {
+        var fr = await fetch(f.download_url, {headers:{Authorization:'Bearer '+getGHToken()}});
+        if (fr.ok) { var s=await fr.json(); stateCache[nom]=s; }
+      }
+    }
+    renderStagList();
+  } catch(e) {}
 }
 
 /* ── OVERRIDE saveLocal pour GitHub ─────────────────────── */
@@ -2608,6 +2685,30 @@ function openChangePwd() { closeSB(); ['pwd-cur','pwd-n1','pwd-n2'].forEach(func
 function closeHubM(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.hub-mo').forEach(function(m){ m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('open'); }); });
 
+/* ── ACTUALISATION MANUELLE ──────────────────────────── */
+async function manualRefresh() {
+  if (!currentStag) { showToast('Sélectionnez un stagiaire d\'abord','err'); return; }
+  if (!getGHToken()) { showToast('⚠ Token GitHub non configuré','err'); return; }
+  setSaveBadge('saving','⏳ Actualisation…');
+  try {
+    var ghData = await ghLoad(currentStag);
+    if (!ghData) { setSaveBadge('',''); showToast('Aucune donnée sur GitHub pour '+currentStag,'ok'); return; }
+    var localTs = (stateCache[currentStag] && stateCache[currentStag]._savedAt) || '';
+    var ghTs    = ghData._savedAt || '';
+    if (ghTs > localTs) {
+      stateCache[currentStag] = ghData;
+      await hubIdbSave(currentStag, ghData);
+      loadState(ghData);
+      setSaveBadge('saved','☁ Mis à jour '+fmtH(ghData._savedAt));
+      showToast('✅ Livret de '+currentStag+' actualisé depuis GitHub','ok');
+      renderStagList();
+    } else {
+      setSaveBadge('saved','☁ Déjà à jour '+fmtH(ghTs||localTs));
+      showToast('✅ Livret déjà à jour — aucune modification sur GitHub','ok');
+    }
+  } catch(e) { setSaveBadge('error','❌ Erreur'); showToast('❌ Erreur actualisation : '+e.message,'err'); }
+}
+
 /* ── SUPPRIMER updateSpAccountBar et isLocalFile ─────── */
 function updateSpAccountBar(){}
 function isLocalFile(){ return window.location.protocol==='file:'; }
@@ -2625,9 +2726,19 @@ function hubInit() {
     setFoad(null);
     renderSaveList();
     onQcmChange();
-    if (getGHToken()) setTimeout(function(){ ghSyncAll(); }, 800);
+    if (getGHToken()) {
+      setTimeout(function(){ ghSyncAll(); }, 800);
+      // Sync automatique multi-tablettes toutes les 30s (même sans stagiaire ouvert)
+      setInterval(async function(){
+        if (!currentStag) {
+          // Si aucun stagiaire ouvert, juste mettre à jour les statuts de la sidebar
+          await syncSidebarStatuses();
+        }
+      }, 30000);
+    }
     var n = HUB_SESSION.stagiaires.filter(function(x){return !!stateCache[x];}).length;
-    if (n) showToast('✅ '+n+' livret(s) en mémoire','ok');
+    if (n) showToast('✅ '+n+' livret(s) chargé(s) — Sync automatique active','ok');
+    else if (getGHToken()) showToast('🔄 Sync automatique active (30 sec)','ok');
   });
 }
 
