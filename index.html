@@ -146,11 +146,12 @@ select { cursor: pointer; }
   transition: all .15s;
 }
 .act-item:hover { background: #f5f5f5; border-color: #ddd; }
-.act-item.disabled { background:#f0f0f0; border-color:#e0e0e0; opacity:.45; pointer-events:none; }
-.act-item.disabled .act-item-label { color:#aaa; }
-.act-item.disabled .act-num { background:#e8e8e8; color:#bbb; border-color:#ddd; }
+.act-item.disabled { background:#ececec; border-color:#d5d5d5; }
+.act-item.disabled .act-item-label { color:#777; }
+.act-item.disabled .act-num { background:#e2e2e2; color:#777; border-color:#ccc; }
 .act-item.disabled .act-minus,
-.act-item.disabled .act-plus  { background:#e8e8e8; border-color:#ddd; color:#bbb; }
+.act-item.disabled .act-plus  { background:#e2e2e2; border-color:#ccc; color:#777; }
+.act-item.disabled.done, .act-item.disabled:has(.act-num.nonzero) { background:#e8f5e9; border-color:#43a047; }
 
 
 .act-item-label { flex: 1; font-weight: 500; }
@@ -906,73 +907,18 @@ html,body{height:100%;overflow:hidden;}body{display:flex;flex-direction:column;}
    DONNÉES — COMPÉTENCES COD2 PL
    ============================================================ */
 
-var COMPS_CCF = [
-  /* Groupe 1 */
-  { id:'pec_prise',    cat:1, label:'Prise en compte du véhicule' },
-  { id:'pec_verif',    cat:1, label:'Vérification avant départ' },
-  { id:'pec_install',  cat:1, label:'Installation au poste de conduite' },
-  { id:'pec_cabine',   cat:1, label:'Sécurité cabine' },
-  { id:'pec_temoins',  cat:1, label:'Localisation des témoins et commandes' },
-  /* Groupe 2 */
-  { id:'ant_stopd',    cat:2, label:'STOPD' },
-  { id:'ant_gabarit',  cat:2, label:'Maîtrise du gabarit' },
-  { id:'ant_trajet',   cat:2, label:'Décider d\'une trajectoire et la respecter' },
-  { id:'ant_danger',   cat:2, label:'Identification des situations dangereuses' },
-  /* Groupe 3 */
-  { id:'con_mains',    cat:3, label:'Position des mains, maintien du volant' },
-  { id:'con_point',    cat:3, label:'Point effet' },
-  { id:'con_rapport',  cat:3, label:'Rapport adapté' },
-  { id:'con_regime',   cat:3, label:'Régime moteur adapté' },
-  { id:'con_freins',   cat:3, label:'Utilisation du ralentisseur et des freins' },
-  { id:'con_aisance',  cat:3, label:'Aisance, confiance en soi, maîtrise du véhicule' },
-  /* Groupe 4 */
-  { id:'dtt_util',        cat:4, label:'Utilisation des dispositifs TT' },
-  { id:'dtt_temoins',     cat:4, label:'Interprétation des témoins des dispositifs TT' },
-  { id:'dtt_contraintes', cat:4, label:'Connaissance des contraintes dispositifs TT' },
-];
+var C_PEC = { id:'pec_prise',  cat:1, label:'🔍 Prise en compte du véhicule TT' };
+var C_ANT = { id:'ant_terrain',cat:2, label:'🗺️ Anticiper – Terrain et engagement' };
+var C_CON = { id:'con_cond',   cat:3, label:'🚗 Conduite tout-terrain' };
+var C_DTT = { id:'dtt_adapt',  cat:4, label:'⚙️ Dispositifs TT' };
 
-/* Compétences spécifiques conduite de nuit */
-var COMPS_NUIT = [
-  { id:'con_mains',    cat:3, label:'Position des mains, maintien du volant' },
-  { id:'con_point',    cat:3, label:'Point effet' },
-  { id:'con_rapport',  cat:3, label:'Rapport adapté' },
-  { id:'con_regime',   cat:3, label:'Régime moteur adapté' },
-  { id:'con_freins',   cat:3, label:'Utilisation du ralentisseur et des freins' },
-  { id:'con_aisance',  cat:3, label:'Aisance, confiance en soi, maîtrise du véhicule' },
-  { id:'dtt_util',        cat:4, label:'Utilisation des dispositifs TT' },
-  { id:'dtt_temoins',     cat:4, label:'Interprétation des témoins des dispositifs TT' },
-  { id:'dtt_contraintes', cat:4, label:'Connaissance des contraintes dispositifs TT' },
-  { id:'nuit_danger',     cat:5, label:'Identification des situations dangereuses' },
-  { id:'nuit_guidage',    cat:5, label:'Respect des consignes lors des phases de guidage' },
-  { id:'nuit_eclairage',  cat:5, label:'Utilisation adaptée des dispositifs d\'éclairage' },
-];
+var COMPS_CCF     = [ C_PEC, C_ANT, C_CON, C_DTT ];
 
-/* Compétences CCF circuit (avec conduite route en plus) */
-var COMPS_CIRCUIT = [
-  { id:'pec_prise',    cat:1, label:'Prise en compte du véhicule' },
-  { id:'pec_verif',    cat:1, label:'Vérification avant départ' },
-  { id:'pec_install',  cat:1, label:'Installation au poste de conduite' },
-  { id:'pec_cabine',   cat:1, label:'Sécurité cabine' },
-  { id:'pec_temoins',  cat:1, label:'Localisation des témoins et commandes' },
-  { id:'rte_code',     cat:6, label:'Respect du code de la route' },
-  { id:'rte_vitesse',  cat:6, label:'Vitesse adaptée' },
-  { id:'rte_comport',  cat:6, label:'Compréhension du comportement du véhicule' },
-  { id:'rte_gabarit',  cat:6, label:'Maîtrise du gabarit' },
-  { id:'rte_aisance',  cat:6, label:'Aisance, confiance en soi, maîtrise du véhicule' },
-  { id:'ant_stopd',    cat:2, label:'STOPD' },
-  { id:'ant_gabarit',  cat:2, label:'Maîtrise du gabarit (TT)' },
-  { id:'ant_trajet',   cat:2, label:'Décider d\'une trajectoire et la respecter' },
-  { id:'ant_danger',   cat:2, label:'Identification des situations dangereuses' },
-  { id:'con_mains',    cat:3, label:'Position des mains, maintien du volant' },
-  { id:'con_point',    cat:3, label:'Point effet' },
-  { id:'con_rapport',  cat:3, label:'Rapport adapté' },
-  { id:'con_regime',   cat:3, label:'Régime moteur adapté' },
-  { id:'con_freins',   cat:3, label:'Utilisation du ralentisseur et des freins' },
-  { id:'con_aisance',  cat:3, label:'Aisance, confiance en soi, maîtrise du véhicule' },
-  { id:'dtt_util',        cat:4, label:'Utilisation des dispositifs TT' },
-  { id:'dtt_temoins',     cat:4, label:'Interprétation des témoins des dispositifs TT' },
-  { id:'dtt_contraintes', cat:4, label:'Connaissance des contraintes dispositifs TT' },
-];
+/* Conduite de nuit */
+var COMPS_NUIT    = [ C_CON, C_DTT, { id:'nuit_cond', cat:5, label:'Conduite de nuit' } ];
+
+/* CCF circuit (avec conduite routière en plus) */
+var COMPS_CIRCUIT = [ C_PEC, { id:'rte_cond', cat:6, label:'Conduite routière' }, C_ANT, C_CON, C_DTT ];
 
 /* Compétences découverte (lundi matin) */
 var COMPS_DECOUVERTE_PEC = [
