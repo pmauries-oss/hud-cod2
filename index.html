@@ -500,6 +500,7 @@ html,body{height:100%;overflow:hidden;}body{display:flex;flex-direction:column;}
   <div class="sb-footer">
     <button class="sb-btn gh-btn" onclick="ghSyncAll()">🔄 Charger depuis GitHub</button>
     <button class="sb-btn" onclick="openGHModal()">⚙ Configurer token GitHub</button>
+    <button class="sb-btn" onclick="ghSyncCfg(false)">🔄 Actualiser la liste des stagiaires</button>
     <button class="sb-btn" onclick="openSession()">✏ Modifier session / stagiaires</button>
     <button class="sb-btn" onclick="openChangePwd()">🔐 Changer le mot de passe</button>
     <button class="sb-btn" onclick="hubLogout()" style="color:rgba(255,255,255,.4);">🔒 Déconnecter</button>
@@ -2428,6 +2429,44 @@ async function ghLoad(nom) {
     return JSON.parse(ghFromB64(d.content));
   } catch(e) { return null; }
 }
+var dirty = (typeof dirty !== 'undefined') ? dirty : false;
+/* ── CONFIG SESSION PARTAGÉE (nom + stagiaires) ── */
+var CFG_PATH = 'config/session.json';
+async function ghSaveCfg() {
+  if (!getGHToken()) return false;
+  try {
+    var sha = await ghGetSHA(CFG_PATH);
+    var body = { message:'Session '+HUB_SESSION.name, content:ghB64(JSON.stringify(HUB_SESSION,null,2)) };
+    if (sha) body.sha = sha;
+    var r = await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+CFG_PATH,
+      {method:'PUT', headers:ghHdrs(), body:JSON.stringify(body)});
+    return r.ok;
+  } catch(e) { return false; }
+}
+async function ghSyncCfg(silent) {
+  if (!getGHToken()) return;
+  try {
+    var r = await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+CFG_PATH+'?t='+Date.now(), {headers:ghHdrs(), cache:'no-store'});
+    if (!r.ok) {
+      // Pas encore de config distante : publier la config locale
+      if (r.status === 404 && HUB_SESSION.updatedAt) ghSaveCfg();
+      return;
+    }
+    var d = JSON.parse(ghFromB64((await r.json()).content));
+    if (!d || !d.stagiaires || !d.stagiaires.length) return;
+    if ((d.updatedAt||'') > (HUB_SESSION.updatedAt||'')) {
+      var changed = JSON.stringify(d.stagiaires)!==JSON.stringify(HUB_SESSION.stagiaires) || d.name!==HUB_SESSION.name;
+      HUB_SESSION = d;
+      localStorage.setItem('cod2_hub_sess', JSON.stringify(HUB_SESSION));
+      if (changed) {
+        stateCache = {}; currentStag = null;
+        renderStagList();
+        ghSyncAll();
+        if (!silent) showToast('✅ Session mise à jour : '+d.name,'ok');
+      }
+    } else if (!silent) showToast('✅ Liste déjà à jour','ok');
+  } catch(e) {}
+}
 async function ghSyncAll() {
   var token = getGHToken();
   if (!token) { showToast('⚠ Configurez le token GitHub d\'abord','err'); openGHModal(); return; }
@@ -2670,11 +2709,12 @@ function saveSession() {
   var name  = document.getElementById('sess-name-inp').value.trim() || HUB_SESSION.name;
   var stags = document.getElementById('sess-stags-inp').value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
   if (!stags.length) { alert('Ajoutez au moins un stagiaire.'); return; }
-  HUB_SESSION = { name:name, stagiaires:stags };
+  HUB_SESSION = { name:name, stagiaires:stags, updatedAt:new Date().toISOString() };
   localStorage.setItem('cod2_hub_sess', JSON.stringify(HUB_SESSION));
   stateCache = {}; currentStag = null;
   renderStagList();
   closeHubM('mo-sess');
+  ghSaveCfg().then(function(ok){ if(ok) showToast('☁ Liste partagée avec les autres tablettes','ok'); });
   showToast('✅ Session mise à jour — '+stags.length+' stagiaires','ok');
 }
 
@@ -2727,9 +2767,10 @@ function hubInit() {
     renderSaveList();
     onQcmChange();
     if (getGHToken()) {
-      setTimeout(function(){ ghSyncAll(); }, 800);
+      ghSyncCfg(true).then(function(){ setTimeout(function(){ ghSyncAll(); }, 300); });
       // Sync automatique multi-tablettes toutes les 30s (même sans stagiaire ouvert)
       setInterval(async function(){
+        await ghSyncCfg(true);
         if (!currentStag) {
           // Si aucun stagiaire ouvert, juste mettre à jour les statuts de la sidebar
           await syncSidebarStatuses();
